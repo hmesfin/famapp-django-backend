@@ -665,20 +665,54 @@ class PetCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating a new pet.
 
+    Accepts family_public_id and converts to family object.
+
     Validates:
     - name: required
-    - species: required
+    - family_public_id: must be a valid family where user is a member
     """
+
+    family_public_id = serializers.UUIDField(write_only=True)
 
     class Meta:
         model = Pet
-        fields = ["name", "species", "breed", "age", "notes"]
+        fields = ["family_public_id", "name", "species", "breed", "age", "notes"]
 
     def validate_name(self, value):
         """Validate that name is not empty."""
         if not value or not value.strip():
             raise serializers.ValidationError("Name cannot be empty.")
         return value
+
+    def validate_family_public_id(self, value):
+        """Validate that family exists and user is a member."""
+        try:
+            family = Family.objects.get(public_id=value, is_deleted=False)
+        except Family.DoesNotExist:
+            raise serializers.ValidationError("Family not found.")
+
+        # Check if user is a member of the family
+        request = self.context.get("request")
+        if request and request.user:
+            if not FamilyMember.objects.filter(
+                family=family, user=request.user
+            ).exists():
+                raise serializers.ValidationError(
+                    "You must be a member of this family to create pets."
+                )
+
+        return value
+
+    def create(self, validated_data):
+        """Create pet and convert public_id to actual object."""
+        # Extract family_public_id
+        family_public_id = validated_data.pop("family_public_id")
+
+        # Get family object
+        family = Family.objects.get(public_id=family_public_id)
+        validated_data["family"] = family
+
+        return super().create(validated_data)
 
 
 class PetUpdateSerializer(serializers.ModelSerializer):
@@ -771,7 +805,7 @@ class PetActivityCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PetActivity
-        fields = ["activity_type", "scheduled_time", "notes"]
+        fields = ["activity_type", "scheduled_time", "notes", "is_completed"]
 
 
 class PetActivitySerializer(serializers.ModelSerializer):

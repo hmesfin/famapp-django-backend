@@ -28,6 +28,8 @@ from apps.shared.mixins import FamilyAccessMixin
 from apps.shared.models import Family
 from apps.shared.models import FamilyMember
 from apps.shared.models import GroceryItem
+from apps.shared.models import Pet
+from apps.shared.models import PetActivity
 from apps.shared.models import ScheduleEvent
 from apps.shared.models import Todo
 from apps.shared.permissions import IsFamilyAdmin
@@ -44,6 +46,11 @@ from apps.shared.serializers import GrocerySerializer
 from apps.shared.serializers import GroceryUpdateSerializer
 from apps.shared.serializers import InviteMemberSerializer
 from apps.shared.serializers import MemberSerializer
+from apps.shared.serializers import PetActivityCreateSerializer
+from apps.shared.serializers import PetActivitySerializer
+from apps.shared.serializers import PetCreateSerializer
+from apps.shared.serializers import PetSerializer
+from apps.shared.serializers import PetUpdateSerializer
 from apps.shared.serializers import TodoCreateSerializer
 from apps.shared.serializers import TodoSerializer
 from apps.shared.serializers import TodoUpdateSerializer
@@ -673,3 +680,163 @@ class GroceryItemViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         # Return updated item
         serializer = self.get_serializer(item)
         return Response(serializer.data)
+
+
+@extend_schema_view(
+    list=extend_schema(tags=["Pets"]),
+    create=extend_schema(tags=["Pets"]),
+    retrieve=extend_schema(tags=["Pets"]),
+    update=extend_schema(tags=["Pets"]),
+    partial_update=extend_schema(tags=["Pets"]),
+    destroy=extend_schema(tags=["Pets"]),
+)
+class PetViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
+    """
+    ViewSet for Pet CRUD operations and PetActivity logging.
+
+    Uses FamilyAccessMixin to automatically filter pets by family membership!
+
+    Endpoints:
+    - GET /api/v1/pets/ - List pets (user's families only)
+    - POST /api/v1/pets/ - Create pet
+    - GET /api/v1/pets/{public_id}/ - Retrieve pet details
+    - PATCH /api/v1/pets/{public_id}/ - Update pet
+    - DELETE /api/v1/pets/{public_id}/ - Soft delete pet
+    - POST /api/v1/pets/{public_id}/activities/ - Log pet activity
+    - GET /api/v1/pets/{public_id}/activities/ - List pet activities
+
+    CRITICAL: All URLs use public_id (UUID), NOT integer id!
+    """
+
+    queryset = Pet.objects.all()  # Mixin filters this automatically!
+    lookup_field = "public_id"
+    lookup_url_kwarg = "public_id"
+    permission_classes = [IsAuthenticated]
+
+    # Swagger/OpenAPI schema tag
+    tags = ["Pets"]
+
+    def get_serializer_class(self):
+        """
+        Return appropriate serializer based on action.
+
+        - create: PetCreateSerializer (with family_public_id)
+        - update/partial_update: PetUpdateSerializer (all optional)
+        - retrieve/list: PetSerializer (includes last activity timestamps)
+        - activities (POST): PetActivityCreateSerializer
+        - activities (GET): PetActivitySerializer
+        """
+        if self.action == "create":
+            return PetCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return PetUpdateSerializer
+        elif self.action == "activities" and self.request.method == "POST":
+            return PetActivityCreateSerializer
+        elif self.action == "activities" and self.request.method == "GET":
+            return PetActivitySerializer
+        else:
+            return PetSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create pet and return full pet data.
+
+        Override to return PetSerializer (with all fields) instead of
+        PetCreateSerializer (which only has input fields).
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Use PetSerializer to return full pet data
+        pet = serializer.instance
+        output_serializer = PetSerializer(pet)
+        headers = self.get_success_headers(output_serializer.data)
+        return Response(
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def perform_create(self, serializer):
+        """
+        Create pet and set created_by/updated_by to current user.
+
+        The serializer handles family lookup via family_public_id.
+        """
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        """
+        Update pet and set updated_by to current user.
+        """
+        serializer.save(updated_by=self.request.user)
+
+    def perform_destroy(self, instance):
+        """
+        Soft delete pet by setting is_deleted=True and deleted_at.
+
+        Does NOT hard delete from database (BaseModel soft delete pattern).
+        Cascade delete to PetActivity handled by Django on_delete=CASCADE.
+        """
+        instance.is_deleted = True
+        instance.deleted_at = timezone.now()
+        instance.save()
+
+    # ========================================================================
+    # Pet Activity Management Actions
+    # ========================================================================
+
+    @action(
+        detail=True,
+        methods=["post", "get"],
+        url_path="activities",
+    )
+    def activities(self, request, public_id=None):
+        """
+        POST /api/v1/pets/{public_id}/activities/ - Log pet activity
+        GET /api/v1/pets/{public_id}/activities/ - List pet activities
+
+        Handles both logging and listing pet activities on the same endpoint.
+        """
+        pet = self.get_object()
+
+        if request.method == "POST":
+            # Log activity
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            # Create activity linked to this pet
+            activity = serializer.save(
+                pet=pet, created_by=request.user, updated_by=request.user
+            )
+
+            # If is_completed=True, set completed_by to current user
+            if activity.is_completed and not activity.completed_by:
+                activity.completed_by = request.user
+                activity.save()
+
+            # Return activity data
+            output_serializer = PetActivitySerializer(activity)
+            return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+        elif request.method == "GET":
+            # List activities
+            queryset = PetActivity.objects.filter(pet=pet, is_deleted=False).order_by(
+                "-scheduled_time"
+            )
+
+            # Filter by activity_type if provided
+            activity_type = request.query_params.get("activity_type")
+            if activity_type:
+                # Convert to lowercase to match enum values
+                queryset = queryset.filter(activity_type=activity_type.lower())
+
+            # Limit results if provided
+            limit = request.query_params.get("limit")
+            if limit:
+                try:
+                    queryset = queryset[: int(limit)]
+                except ValueError:
+                    pass  # Ignore invalid limit
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)

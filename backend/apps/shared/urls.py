@@ -13,6 +13,7 @@ from rest_framework.routers import DefaultRouter
 
 from apps.shared.views import FamilyViewSet
 from apps.shared.views import GroceryItemViewSet
+from apps.shared.views import PetViewSet
 from apps.shared.views import ScheduleEventViewSet
 from apps.shared.views import TodoViewSet
 
@@ -57,6 +58,17 @@ router.register(r"events", ScheduleEventViewSet, basename="event")
 # - DELETE /api/v1/groceries/{public_id}/ -> destroy
 # - PATCH  /api/v1/groceries/{public_id}/toggle/ -> toggle purchased
 router.register(r"groceries", GroceryItemViewSet, basename="grocery")
+
+# Pet endpoints
+# This creates:
+# - GET    /api/v1/pets/                  -> list
+# - POST   /api/v1/pets/                  -> create
+# - GET    /api/v1/pets/{public_id}/      -> retrieve
+# - PATCH  /api/v1/pets/{public_id}/      -> partial_update
+# - DELETE /api/v1/pets/{public_id}/      -> destroy
+# - POST   /api/v1/pets/{public_id}/activities/ -> log activity
+# - GET    /api/v1/pets/{public_id}/activities/ -> list activities
+router.register(r"pets", PetViewSet, basename="pet")
 
 urlpatterns = [
     path("", include(router.urls)),
