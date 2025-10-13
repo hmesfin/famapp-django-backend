@@ -10,9 +10,12 @@ Following TDD methodology and DRF best practices:
 Ham Dog & TC building family collaboration APIs! 🚀
 """
 
+from django.contrib.auth import get_user_model
 from django.db.models import Count, OuterRef, Subquery
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -23,7 +26,12 @@ from apps.shared.serializers import (
     FamilyDetailSerializer,
     FamilySerializer,
     FamilyUpdateSerializer,
+    InviteMemberSerializer,
+    MemberSerializer,
+    UpdateMemberRoleSerializer,
 )
+
+User = get_user_model()
 
 
 class FamilyViewSet(viewsets.ModelViewSet):
@@ -70,6 +78,7 @@ class FamilyViewSet(viewsets.ModelViewSet):
 
         - list: Return families where user is a member (with member_count annotation)
         - retrieve/update/destroy: Return families where user is a member
+        - members/member_detail: Don't filter by membership (permission checked in action)
         - Exclude soft-deleted families
         """
         user = self.request.user
@@ -86,6 +95,11 @@ class FamilyViewSet(viewsets.ModelViewSet):
                 .annotate(member_count=Count("familymember"))
                 .order_by("-created_at")
             )
+
+        # For member management actions, don't filter by membership
+        # (permission is checked manually in the action)
+        if self.action in ["members", "member_detail"]:
+            return Family.objects.filter(is_deleted=False)
 
         # For retrieve/update/destroy, just filter by membership
         return Family.objects.filter(members=user, is_deleted=False)
@@ -184,3 +198,137 @@ class FamilyViewSet(viewsets.ModelViewSet):
             family_data["member_count"] = families_list[i].member_count
 
         return Response(data)
+
+    # ========================================================================
+    # Family Member Management Actions
+    # ========================================================================
+
+    @action(
+        detail=True,
+        methods=["get", "post"],
+        url_path="members",
+    )
+    def members(self, request, public_id=None):
+        """
+        GET /api/v1/families/{public_id}/members/ - List members (any member)
+        POST /api/v1/families/{public_id}/members/ - Invite member (organizers only)
+
+        Handles both listing and inviting members on the same endpoint.
+        """
+        family = self.get_object()
+
+        if request.method == "GET":
+            # List members - any family member can view
+            # Check permission manually
+            if not FamilyMember.objects.filter(
+                family=family, user=request.user
+            ).exists():
+                return Response(
+                    {"detail": "You must be a family member to access this resource."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            members = FamilyMember.objects.filter(family=family).select_related("user")
+            serializer = MemberSerializer(members, many=True)
+            return Response(serializer.data)
+
+        elif request.method == "POST":
+            # Invite member - organizers only
+            # Check permission manually
+            if not FamilyMember.objects.filter(
+                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
+            ).exists():
+                return Response(
+                    {"detail": "You must be a family organizer to perform this action."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            serializer = InviteMemberSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            email = serializer.validated_data["email"]
+            role = serializer.validated_data.get("role", FamilyMember.Role.PARENT)
+
+            # Get user by email
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                    {"email": f"No user found with email: {email}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Check if user already a member
+            if FamilyMember.objects.filter(family=family, user=user).exists():
+                return Response(
+                    {"detail": "User is already a member of this family."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Create membership
+            membership = FamilyMember.objects.create(
+                family=family, user=user, role=role
+            )
+
+            # Return member data
+            output_serializer = MemberSerializer(membership)
+            return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["patch", "delete"],
+        url_path="members/(?P<user_public_id>[^/.]+)",
+    )
+    def member_detail(self, request, public_id=None, user_public_id=None):
+        """
+        PATCH /api/v1/families/{public_id}/members/{user_public_id}/ - Update role
+        DELETE /api/v1/families/{public_id}/members/{user_public_id}/ - Remove member
+
+        Handles both updating and removing individual members.
+        """
+        family = self.get_object()
+
+        # Get user by public_id
+        user = get_object_or_404(User, public_id=user_public_id)
+
+        # Get membership
+        membership = get_object_or_404(FamilyMember, family=family, user=user)
+
+        if request.method == "PATCH":
+            # Update member role - organizers only
+            if not FamilyMember.objects.filter(
+                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
+            ).exists():
+                return Response(
+                    {"detail": "You must be a family organizer to perform this action."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            serializer = UpdateMemberRoleSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            membership.role = serializer.validated_data["role"]
+            membership.save()
+
+            # Return updated member data
+            output_serializer = MemberSerializer(membership)
+            return Response(output_serializer.data)
+
+        elif request.method == "DELETE":
+            # Remove member
+            # Allow if: (1) user is organizer OR (2) user is removing themselves
+            is_organizer = FamilyMember.objects.filter(
+                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
+            ).exists()
+            is_self_removal = user == request.user
+
+            if not (is_organizer or is_self_removal):
+                return Response(
+                    {"detail": "You do not have permission to remove this member."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Delete membership
+            membership.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
