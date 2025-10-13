@@ -1,0 +1,1 @@
+Django Vue Starter - Verify Your Email Address

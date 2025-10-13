@@ -1,0 +1,174 @@
+# DjVue Orchestra CI/CD Pipeline
+# Ham Dog & TC's Bulletproof GitHub Actions
+# "Keep it simple, keep it working!" 🎭
+
+name: DjVue Orchestra CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Frontend checks - TypeScript and Vue.js validation
+  frontend-checks:
+    name: 🎨 Frontend Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: 📦 Install frontend dependencies
+      working-directory: ./frontend
+      run: |
+        # Use npm install if package-lock.json doesn't exist
+        if [ ! -f package-lock.json ]; then
+          npm install
+        else
+          npm ci
+        fi
+    
+    - name: 🔍 TypeScript check
+      working-directory: ./frontend
+      run: npm run type-check
+    
+    - name: 🧹 ESLint check
+      working-directory: ./frontend
+      run: npm run lint
+    
+    - name: 🏗️ Build check
+      working-directory: ./frontend
+      run: npm run build-only
+
+  # Backend checks - Django validation and basic tests
+  backend-checks:
+    name: 🏰 Backend Validation
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:6
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: 🔧 Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+    
+    - name: 📦 Install backend dependencies
+      run: |
+        uv sync --frozen
+    
+    - name: 🔍 Django system check
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379/1
+        DJANGO_SETTINGS_MODULE: config.settings.test
+      run: |
+        uv run python manage.py check --deploy
+    
+    - name: 📊 Run Django migrations check
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379/1
+        DJANGO_SETTINGS_MODULE: config.settings.test
+      run: |
+        uv run python manage.py makemigrations --check --dry-run
+    
+    - name: 🧪 Run basic tests
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379/1
+        DJANGO_SETTINGS_MODULE: config.settings.test
+      run: |
+        uv run python manage.py test --keepdb
+
+  # Docker build verification - The ultimate test!
+  docker-build:
+    name: 🐳 Docker Build Verification
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: 🏗️ Build Django service
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./compose/local/django/Dockerfile
+        push: false
+        tags: djvue-django:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: 🎨 Build Frontend service  
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./compose/local/frontend/Dockerfile
+        push: false
+        tags: djvue-frontend:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: 🎭 Build Verification Complete
+      run: |
+        echo "✅ Django container built successfully!"
+        echo "✅ Frontend container built successfully!"
+        echo "🎭 Docker build verification passed - containers are ready!"
+
+  # Success summary
+  ci-success:
+    name: 🎉 CI Success
+    runs-on: ubuntu-latest
+    needs: [frontend-checks, backend-checks, docker-build]
+    
+    steps:
+    - name: 🎭 DjVue Orchestra Success!
+      run: |
+        echo "🎉 All checks passed! The DjVue Orchestra is in perfect harmony!"
+        echo "✅ Frontend TypeScript, ESLint, and build: PASSED"
+        echo "✅ Backend Django checks and tests: PASSED"  
+        echo "✅ Docker build verification: PASSED"
+        echo ""
+        echo "🍪 In cookiecutter-django we trust, all others must bring tests!"
+        echo "🎭 Ham Dog & TC Production - Making Django and Vue play nice since 2025!"

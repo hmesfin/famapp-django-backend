@@ -1,0 +1,53 @@
+{% load account %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - Django Vue Starter</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #3b82f6; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9fafb; }
+        .button { display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to Django Vue Starter!</h1>
+        </div>
+        
+        <div class="content">
+            {% user_display user as user_display %}
+            <p>Hello {{ user_display|default:user.email }},</p>
+            
+            <p>Welcome to Django Vue Starter! We're excited to have you on board.</p>
+            
+            <p>To complete your registration and start using your account, please verify your email address by clicking the button below:</p>
+            
+            <a href="{{ protocol }}://{{ domain }}/auth/verify-email?key={{ key }}" class="button">
+                Verify Email Address
+            </a>
+            
+            <p>If the button doesn't work, you can copy and paste the following link into your browser:</p>
+            <p style="word-break: break-all; color: #3b82f6;">
+                {{ protocol }}://{{ domain }}/auth/verify-email?key={{ key }}
+            </p>
+            
+            <p><strong>This verification link will expire in 3 days for security reasons.</strong></p>
+            
+            <p>If you didn't create an account with us, please ignore this email. No account will be created.</p>
+            
+            <p>Welcome aboard!<br>The Django Vue Starter Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated email. Please do not reply to this message.</p>
+        </div>
+    </div>
+</body>
+</html>

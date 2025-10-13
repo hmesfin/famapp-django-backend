@@ -1,0 +1,19 @@
+Welcome to {{ site_name }}!
+
+Hello {{ user.get_full_name|default:user.email }},
+
+Welcome to {{ site_name }}! We're excited to have you on board.
+
+To complete your registration and start using your account, please verify your email address by clicking the link below:
+
+{{ verification_url }}
+
+This verification link will expire in 24 hours for security reasons.
+
+If you didn't create an account with us, please ignore this email. No account will be created.
+
+Welcome aboard!
+The {{ site_name }} Team
+
+---
+This is an automated email. Please do not reply to this message.

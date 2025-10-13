@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+# Set PYTHONPATH to find Django modules - Ham Dog's brilliant idea #2!
+export PYTHONPATH=$PYTHONPATH:/app/backend
+
+python manage.py migrate
+exec uvicorn config.asgi:application --host 0.0.0.0 --reload --reload-include '*.html'

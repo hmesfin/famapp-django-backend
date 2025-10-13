@@ -1,0 +1,45 @@
+You're Invited to Join {{ organization_name|default:"Django Vue Starter" }}!
+================================================================================
+
+Hi{% if invitation.first_name %} {{ invitation.first_name }}{% endif %}!
+
+{{ invited_by_name }} has invited you to join {{ organization_name|default:"Django Vue Starter" }}.
+
+{% if invitation.message %}
+Personal Message:
+----------------
+{{ invitation.message }}
+
+{% endif %}
+INVITATION DETAILS
+------------------
+Your Email: {{ invitation.email }}
+Invited By: {{ invited_by_name }}
+Your Role: {{ role_display|title }}
+{% if organization_name %}Organization: {{ organization_name }}{% endif %}
+
+ACCEPT YOUR INVITATION
+----------------------
+Click the following link to accept your invitation and create your account:
+{{ invitation_url }}
+
+IMPORTANT: This invitation expires in {{ expires_in_days }} days
+Expires on: {{ expires_at_formatted }}
+
+WHAT HAPPENS NEXT?
+------------------
+1. Click the invitation link above
+2. Create your account with a secure password
+3. Start collaborating with your team immediately
+
+SECURITY NOTE
+-------------
+This invitation is unique to you and can only be used once. If you didn't 
+expect this invitation, you can safely ignore this email.
+
+---
+
+{{ organization_name|default:"Django Vue Starter" }}
+This is an automated invitation email. Please do not reply to this message.
+
+Need help? Contact your administrator or support team at support@example.com

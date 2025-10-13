@@ -1,0 +1,22 @@
+{% load account %}
+{% load i18n %}
+Welcome to Django Vue Starter!
+
+{% user_display user as user_display %}
+Hello {{ user_display|default:user.email }},
+
+Welcome to Django Vue Starter! We're excited to have you on board.
+
+To complete your registration and start using your account, please verify your email address by clicking the link below:
+
+{{ protocol }}://{{ domain }}/auth/verify-email?key={{ key }}
+
+This verification link will expire in 3 days for security reasons.
+
+If you didn't create an account with us, please ignore this email. No account will be created.
+
+Welcome aboard!
+The Django Vue Starter Team
+
+---
+This is an automated email. Please do not reply to this message.

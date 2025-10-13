@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+
+# Set PYTHONPATH to find Django modules - Ham Dog's brilliant idea #2!
+export PYTHONPATH=$PYTHONPATH:/app/backend
+
+rm -f './celerybeat.pid'
+exec watchfiles --filter python celery.__main__.main --args '-A config.celery_app beat -l INFO'

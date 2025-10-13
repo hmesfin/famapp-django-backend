@@ -1,0 +1,5 @@
+# General Frontend
+# ------------------------------------------------------------------------------
+VITE_APP_NAME=MyFrontendApp
+VITE_APP_ENV=local
+VITE_APP_API_URL=http://localhost:8000/api
