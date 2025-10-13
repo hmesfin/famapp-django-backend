@@ -19,14 +19,14 @@ from .invitation_token_service import InvitationTokenService
 from .invitation_status_service import InvitationStatusService
 
 __all__ = [
-    'InvitationService',
-    'BulkInvitationService', 
-    'InvitationStatsService',
-    'InvitationExpiryService',
-    'PermissionService',
-    'EmailTemplateService',
-    'EmailType',
-    'EmailPreview',
-    'InvitationTokenService',
-    'InvitationStatusService'
+    "InvitationService",
+    "BulkInvitationService",
+    "InvitationStatsService",
+    "InvitationExpiryService",
+    "PermissionService",
+    "EmailTemplateService",
+    "EmailType",
+    "EmailPreview",
+    "InvitationTokenService",
+    "InvitationStatusService",
 ]

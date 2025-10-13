@@ -14,10 +14,6 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
-    # User management
-    path("accounts/", include("allauth.urls")),
-    # Your stuff: custom urls includes go here
-    # ...
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]

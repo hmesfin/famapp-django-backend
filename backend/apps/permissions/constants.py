@@ -3,48 +3,51 @@ Constants for the permissions app
 Defines standard roles and permissions for the system
 """
 
+
 # System Role Code Names
 class RoleCodeName:
     """Standard role code names used throughout the system"""
-    ADMIN = 'admin'
-    MANAGER = 'manager'
-    MEMBER = 'member'
-    VIEWER = 'viewer'
-    GUEST = 'guest'
+
+    ADMIN = "admin"
+    MANAGER = "manager"
+    MEMBER = "member"
+    VIEWER = "viewer"
+    GUEST = "guest"
 
 
 # System Permission Code Names
 class PermissionCodeName:
     """Standard permission code names"""
+
     # Invitation permissions
-    SEND_INVITATIONS = 'send_invitations'
-    VIEW_ALL_INVITATIONS = 'view_all_invitations'
-    MANAGE_INVITATIONS = 'manage_invitations'
-    
+    SEND_INVITATIONS = "send_invitations"
+    VIEW_ALL_INVITATIONS = "view_all_invitations"
+    MANAGE_INVITATIONS = "manage_invitations"
+
     # User management
-    MANAGE_USERS = 'manage_users'
-    VIEW_ALL_USERS = 'view_all_users'
-    EDIT_USER_ROLES = 'edit_user_roles'
-    
+    MANAGE_USERS = "manage_users"
+    VIEW_ALL_USERS = "view_all_users"
+    EDIT_USER_ROLES = "edit_user_roles"
+
     # Project permissions
-    CREATE_PROJECTS = 'create_projects'
-    EDIT_ALL_PROJECTS = 'edit_all_projects'
-    DELETE_PROJECTS = 'delete_projects'
-    VIEW_ALL_PROJECTS = 'view_all_projects'
-    
+    CREATE_PROJECTS = "create_projects"
+    EDIT_ALL_PROJECTS = "edit_all_projects"
+    DELETE_PROJECTS = "delete_projects"
+    VIEW_ALL_PROJECTS = "view_all_projects"
+
     # General permissions
-    ACCESS_ADMIN_PANEL = 'access_admin_panel'
-    VIEW_ANALYTICS = 'view_analytics'
-    MANAGE_SETTINGS = 'manage_settings'
+    ACCESS_ADMIN_PANEL = "access_admin_panel"
+    VIEW_ANALYTICS = "view_analytics"
+    MANAGE_SETTINGS = "manage_settings"
 
 
 # Role choices for forms and models
 ROLE_CHOICES = [
-    (RoleCodeName.ADMIN, 'Administrator'),
-    (RoleCodeName.MANAGER, 'Manager'),
-    (RoleCodeName.MEMBER, 'Member'),
-    (RoleCodeName.VIEWER, 'Viewer'),
-    (RoleCodeName.GUEST, 'Guest'),
+    (RoleCodeName.ADMIN, "Administrator"),
+    (RoleCodeName.MANAGER, "Manager"),
+    (RoleCodeName.MEMBER, "Member"),
+    (RoleCodeName.VIEWER, "Viewer"),
+    (RoleCodeName.GUEST, "Guest"),
 ]
 
 

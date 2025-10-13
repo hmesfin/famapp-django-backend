@@ -7,6 +7,7 @@ Following the Ten Commandments:
 - Provide clear visibility into user assignments
 - Keep it intuitive for template users
 """
+
 from django.contrib import admin
 from django.db import models
 from django.utils.html import format_html
@@ -17,24 +18,25 @@ from .models import Permission, Role, UserRole, Resource, UserPermission
 
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code_name', 'category', 'is_active', 'created_at']
-    list_filter = ['category', 'is_active', 'created_at']
-    search_fields = ['name', 'code_name', 'description']
-    ordering = ['category', 'name']
-    readonly_fields = ['uuid', 'created_at', 'updated_at']
-    
+    list_display = ["name", "code_name", "category", "is_active", "created_at"]
+    list_filter = ["category", "is_active", "created_at"]
+    search_fields = ["name", "code_name", "description"]
+    ordering = ["category", "name"]
+    readonly_fields = ["uuid", "created_at", "updated_at"]
+
     fieldsets = (
-        (None, {
-            'fields': ('code_name', 'name', 'description', 'category', 'is_active')
-        }),
-        (_('Metadata'), {
-            'fields': ('uuid', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        })
+        (
+            None,
+            {"fields": ("code_name", "name", "description", "category", "is_active")},
+        ),
+        (
+            _("Metadata"),
+            {"fields": ("uuid", "created_at", "updated_at"), "classes": ("collapse",)},
+        ),
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('roles')
+        return super().get_queryset(request).prefetch_related("roles")
 
     def has_delete_permission(self, request, obj=None):
         # Allow deletion only if permission is not used in any roles
@@ -52,36 +54,56 @@ class PermissionInline(admin.TabularInline):
 
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code_name', 'get_permission_count', 'get_user_count', 'is_active', 'is_system_role']
-    list_filter = ['is_active', 'is_system_role', 'created_at']
-    search_fields = ['name', 'code_name', 'description']
-    ordering = ['name']
-    readonly_fields = ['uuid', 'created_at', 'updated_at']
-    filter_horizontal = ['permissions']
-    
+    list_display = [
+        "name",
+        "code_name",
+        "get_permission_count",
+        "get_user_count",
+        "is_active",
+        "is_system_role",
+    ]
+    list_filter = ["is_active", "is_system_role", "created_at"]
+    search_fields = ["name", "code_name", "description"]
+    ordering = ["name"]
+    readonly_fields = ["uuid", "created_at", "updated_at"]
+    filter_horizontal = ["permissions"]
+
     fieldsets = (
-        (None, {
-            'fields': ('code_name', 'name', 'description', 'is_active', 'is_system_role')
-        }),
-        (_('Permissions'), {
-            'fields': ('permissions',)
-        }),
-        (_('Metadata'), {
-            'fields': ('uuid', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        })
+        (
+            None,
+            {
+                "fields": (
+                    "code_name",
+                    "name",
+                    "description",
+                    "is_active",
+                    "is_system_role",
+                )
+            },
+        ),
+        (_("Permissions"), {"fields": ("permissions",)}),
+        (
+            _("Metadata"),
+            {"fields": ("uuid", "created_at", "updated_at"), "classes": ("collapse",)},
+        ),
     )
 
     def get_permission_count(self, obj):
         return obj.permissions.filter(is_active=True).count()
-    get_permission_count.short_description = _('Active Permissions')
+
+    get_permission_count.short_description = _("Active Permissions")
 
     def get_user_count(self, obj):
         return obj.user_assignments.filter(is_active=True).count()
-    get_user_count.short_description = _('Active Users')
+
+    get_user_count.short_description = _("Active Users")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('permissions', 'user_assignments')
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related("permissions", "user_assignments")
+        )
 
     def has_delete_permission(self, request, obj=None):
         # System roles cannot be deleted
@@ -92,117 +114,154 @@ class RoleAdmin(admin.ModelAdmin):
 
 @admin.register(UserRole)
 class UserRoleAdmin(admin.ModelAdmin):
-    list_display = ['user', 'role', 'is_active', 'assigned_by', 'expires_at', 'created_at']
-    list_filter = ['is_active', 'role', 'expires_at', 'created_at']
-    search_fields = ['user__email', 'user__first_name', 'user__last_name', 'role__name']
-    ordering = ['-created_at']
-    readonly_fields = ['uuid', 'created_at', 'updated_at', 'is_expired_display', 'is_valid_display']
-    autocomplete_fields = ['user', 'role', 'assigned_by']
-    
+    list_display = [
+        "user",
+        "role",
+        "is_active",
+        "assigned_by",
+        "expires_at",
+        "created_at",
+    ]
+    list_filter = ["is_active", "role", "expires_at", "created_at"]
+    search_fields = ["user__email", "user__first_name", "user__last_name", "role__name"]
+    ordering = ["-created_at"]
+    readonly_fields = [
+        "uuid",
+        "created_at",
+        "updated_at",
+        "is_expired_display",
+        "is_valid_display",
+    ]
+    autocomplete_fields = ["user", "role", "assigned_by"]
+
     fieldsets = (
-        (None, {
-            'fields': ('user', 'role', 'is_active')
-        }),
-        (_('Assignment Details'), {
-            'fields': ('assigned_by', 'expires_at', 'context')
-        }),
-        (_('Status'), {
-            'fields': ('is_expired_display', 'is_valid_display'),
-            'classes': ('collapse',)
-        }),
-        (_('Metadata'), {
-            'fields': ('uuid', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        })
+        (None, {"fields": ("user", "role", "is_active")}),
+        (_("Assignment Details"), {"fields": ("assigned_by", "expires_at", "context")}),
+        (
+            _("Status"),
+            {
+                "fields": ("is_expired_display", "is_valid_display"),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            _("Metadata"),
+            {"fields": ("uuid", "created_at", "updated_at"), "classes": ("collapse",)},
+        ),
     )
 
     def is_expired_display(self, obj):
         if obj.is_expired():
             return format_html('<span style="color: red;">Yes</span>')
         return format_html('<span style="color: green;">No</span>')
-    is_expired_display.short_description = _('Is Expired')
+
+    is_expired_display.short_description = _("Is Expired")
 
     def is_valid_display(self, obj):
         if obj.is_valid():
             return format_html('<span style="color: green;">Valid</span>')
         return format_html('<span style="color: red;">Invalid</span>')
-    is_valid_display.short_description = _('Is Valid')
+
+    is_valid_display.short_description = _("Is Valid")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user', 'role', 'assigned_by')
+        return (
+            super().get_queryset(request).select_related("user", "role", "assigned_by")
+        )
 
 
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
-    list_display = ['name', 'resource_type', 'resource_id', 'created_at']
-    list_filter = ['resource_type', 'created_at']
-    search_fields = ['name', 'resource_type', 'resource_id', 'description']
-    ordering = ['resource_type', 'name']
-    readonly_fields = ['uuid', 'created_at', 'updated_at']
-    
+    list_display = ["name", "resource_type", "resource_id", "created_at"]
+    list_filter = ["resource_type", "created_at"]
+    search_fields = ["name", "resource_type", "resource_id", "description"]
+    ordering = ["resource_type", "name"]
+    readonly_fields = ["uuid", "created_at", "updated_at"]
+
     fieldsets = (
-        (None, {
-            'fields': ('resource_type', 'resource_id', 'name', 'description')
-        }),
-        (_('Additional Data'), {
-            'fields': ('metadata',),
-            'classes': ('collapse',)
-        }),
-        (_('Metadata'), {
-            'fields': ('uuid', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        })
+        (None, {"fields": ("resource_type", "resource_id", "name", "description")}),
+        (_("Additional Data"), {"fields": ("metadata",), "classes": ("collapse",)}),
+        (
+            _("Metadata"),
+            {"fields": ("uuid", "created_at", "updated_at"), "classes": ("collapse",)},
+        ),
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('userpermission_set')
+        return super().get_queryset(request).prefetch_related("userpermission_set")
 
 
 @admin.register(UserPermission)
 class UserPermissionAdmin(admin.ModelAdmin):
-    list_display = ['user', 'permission', 'resource', 'is_active', 'granted_by', 'expires_at', 'created_at']
-    list_filter = ['is_active', 'permission__category', 'resource__resource_type', 'expires_at', 'created_at']
-    search_fields = [
-        'user__email', 'user__first_name', 'user__last_name',
-        'permission__name', 'permission__code_name',
-        'resource__name'
+    list_display = [
+        "user",
+        "permission",
+        "resource",
+        "is_active",
+        "granted_by",
+        "expires_at",
+        "created_at",
     ]
-    ordering = ['-created_at']
-    readonly_fields = ['uuid', 'created_at', 'updated_at', 'is_expired_display', 'is_valid_display']
-    autocomplete_fields = ['user', 'permission', 'resource', 'granted_by']
-    
+    list_filter = [
+        "is_active",
+        "permission__category",
+        "resource__resource_type",
+        "expires_at",
+        "created_at",
+    ]
+    search_fields = [
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "permission__name",
+        "permission__code_name",
+        "resource__name",
+    ]
+    ordering = ["-created_at"]
+    readonly_fields = [
+        "uuid",
+        "created_at",
+        "updated_at",
+        "is_expired_display",
+        "is_valid_display",
+    ]
+    autocomplete_fields = ["user", "permission", "resource", "granted_by"]
+
     fieldsets = (
-        (None, {
-            'fields': ('user', 'permission', 'resource', 'is_active')
-        }),
-        (_('Grant Details'), {
-            'fields': ('granted_by', 'expires_at', 'context')
-        }),
-        (_('Status'), {
-            'fields': ('is_expired_display', 'is_valid_display'),
-            'classes': ('collapse',)
-        }),
-        (_('Metadata'), {
-            'fields': ('uuid', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        })
+        (None, {"fields": ("user", "permission", "resource", "is_active")}),
+        (_("Grant Details"), {"fields": ("granted_by", "expires_at", "context")}),
+        (
+            _("Status"),
+            {
+                "fields": ("is_expired_display", "is_valid_display"),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            _("Metadata"),
+            {"fields": ("uuid", "created_at", "updated_at"), "classes": ("collapse",)},
+        ),
     )
 
     def is_expired_display(self, obj):
         if obj.is_expired():
             return format_html('<span style="color: red;">Yes</span>')
         return format_html('<span style="color: green;">No</span>')
-    is_expired_display.short_description = _('Is Expired')
+
+    is_expired_display.short_description = _("Is Expired")
 
     def is_valid_display(self, obj):
         if obj.is_valid():
             return format_html('<span style="color: green;">Valid</span>')
         return format_html('<span style="color: red;">Invalid</span>')
-    is_valid_display.short_description = _('Is Valid')
+
+    is_valid_display.short_description = _("Is Valid")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related(
-            'user', 'permission', 'resource', 'granted_by'
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("user", "permission", "resource", "granted_by")
         )
 
 

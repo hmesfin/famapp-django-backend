@@ -5,9 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 // Import module routes
 import { authRoutes } from '@/modules/auth/routes'
 import { defaultRoutes } from '@/modules/default/routes'
-import { projectRoutes } from '@/modules/projects/routes'
 import { invitationRoutes } from '@/modules/invitations/routes'
-import { profileRoutes } from '@/modules/profiles/routes'
 
 const routes: RouteRecordRaw[] = [
   // Public routes with DefaultLayout
@@ -42,12 +40,8 @@ const routes: RouteRecordRaw[] = [
       ...defaultRoutes.dashboard,
       // Auth dashboard routes
       ...authRoutes.dashboard,
-      // Project management routes
-      ...projectRoutes.dashboard,
       // Invitation management routes
       ...invitationRoutes.dashboard,
-      // Profile and settings routes
-      ...profileRoutes.dashboard,
     ],
   },
 

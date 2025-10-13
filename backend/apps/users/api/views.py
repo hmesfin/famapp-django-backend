@@ -25,22 +25,22 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         serializer = UserSerializer(request.user, context={"request": request})
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def search(self, request):
         """Search for users by email or name"""
-        query = request.query_params.get('q', '').strip()
-        
+        query = request.query_params.get("q", "").strip()
+
         if len(query) < 2:
             return Response([])
-        
+
         # Search by email, first name, or last name
         users = User.objects.filter(
-            Q(email__icontains=query) |
-            Q(first_name__icontains=query) |
-            Q(last_name__icontains=query)
+            Q(email__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
         ).exclude(
             public_id=request.user.public_id  # Exclude current user
         )[:10]  # Limit to 10 results
-        
+
         serializer = UserSerializer(users, many=True, context={"request": request})
         return Response(serializer.data)
