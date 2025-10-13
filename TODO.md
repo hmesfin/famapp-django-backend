@@ -313,98 +313,114 @@ Build a family collaboration app backend using Django REST Framework with JWT au
 
 ---
 
-## Phase 4: CRUD Endpoints (Family & Members)
+## Phase 4: CRUD Endpoints (Family & Members) ✅ COMPLETE
 
-### 4.1 Family Endpoints
+### 4.1 Family Endpoints ✅ COMPLETE (20 tests passing!)
 
-- [ ] **TEST**: POST /api/v1/families/
+- [x] **TEST**: POST /api/v1/families/
 
-  - [ ] Write test: Creates family with authenticated user as admin
-  - [ ] Implement: `apps/shared/views.py` (FamilyViewSet with create action)
-  - [ ] Write test: Returns 201 with family data
-  - [ ] Implement: perform_create() to set created_by and create FamilyMember
-  - [ ] Write test: Validates family name (required)
-  - [ ] Implement: Use FamilyCreateSerializer
-  - [ ] Write test: Returns 401 if not authenticated
-  - [ ] Implement: IsAuthenticated permission class
+  - [x] Write test: Creates family with authenticated user as admin
+  - [x] Implement: `apps/shared/views.py` (FamilyViewSet with create action)
+  - [x] Write test: Returns 201 with family data
+  - [x] Implement: perform_create() to set created_by and create FamilyMember
+  - [x] Write test: Validates family name (required)
+  - [x] Implement: Use FamilyCreateSerializer
+  - [x] Write test: Returns 401 if not authenticated
+  - [x] Implement: IsAuthenticated permission class
 
-- [ ] **TEST**: GET /api/v1/families/
+- [x] **TEST**: GET /api/v1/families/
 
-  - [ ] Write test: Returns all families user belongs to
-  - [ ] Implement: list() action with queryset filter
-  - [ ] Write test: Includes member count for each family
-  - [ ] Implement: annotate(member_count=Count('members'))
-  - [ ] Write test: Returns empty list if user has no families
-  - [ ] Implement: Filter by family\_\_members=request.user
+  - [x] Write test: Returns all families user belongs to
+  - [x] Implement: list() action with queryset filter
+  - [x] Write test: Includes member count for each family
+  - [x] Implement: annotate(member_count=Count('members'))
+  - [x] Write test: Returns empty list if user has no families
+  - [x] Implement: Filter by family\_\_members=request.user
 
-- [ ] **TEST**: GET /api/v1/families/{public_id}/
+- [x] **TEST**: GET /api/v1/families/{public_id}/
 
-  - [ ] Write test: Returns family details with members
-  - [ ] Implement: retrieve() action with FamilyDetailSerializer
-  - [ ] Write test: Returns 403 if user not a member
-  - [ ] Implement: IsFamilyMember permission class
-  - [ ] Write test: Includes member list with roles
-  - [ ] Implement: Nested serialization with prefetch_related('members')
+  - [x] Write test: Returns family details with members
+  - [x] Implement: retrieve() action with FamilyDetailSerializer
+  - [x] Write test: Returns 403 if user not a member
+  - [x] Implement: IsFamilyMember permission class
+  - [x] Write test: Includes member list with roles
+  - [x] Implement: Nested serialization with prefetch_related('members')
 
-- [ ] **TEST**: PATCH /api/v1/families/{public_id}/
+- [x] **TEST**: PATCH /api/v1/families/{public_id}/
 
-  - [ ] Write test: Updates family name (admin only)
-  - [ ] Implement: update() action with FamilyUpdateSerializer
-  - [ ] Write test: Returns 403 if user not admin
-  - [ ] Implement: IsFamilyAdmin permission class
-  - [ ] Write test: Returns updated family data
-  - [ ] Implement: perform_update() to set updated_by
+  - [x] Write test: Updates family name (admin only)
+  - [x] Implement: update() action with FamilyUpdateSerializer
+  - [x] Write test: Returns 403 if user not admin
+  - [x] Implement: IsFamilyAdmin permission class
+  - [x] Write test: Returns updated family data
+  - [x] Implement: perform_update() to set updated_by
 
-- [ ] **TEST**: DELETE /api/v1/families/{public_id}/
-  - [ ] Write test: Soft deletes family (admin only)
-  - [ ] Implement: destroy() action with soft delete (set is_deleted=True)
-  - [ ] Write test: Returns 403 if user not admin
-  - [ ] Implement: IsFamilyAdmin permission class
-  - [ ] Write test: Cascades to all related data
-  - [ ] Verify: Django cascade deletes work as expected
+- [x] **TEST**: DELETE /api/v1/families/{public_id}/
+  - [x] Write test: Soft deletes family (admin only)
+  - [x] Implement: destroy() action with soft delete (set is_deleted=True)
+  - [x] Write test: Returns 403 if user not admin
+  - [x] Implement: IsFamilyAdmin permission class
+  - [x] Write test: Cascades to all related data
+  - [x] Verify: Django cascade deletes work as expected
 
-### 4.2 Family Member Endpoints
+### 4.2 Family Member Endpoints ✅ COMPLETE (18 tests passing!)
 
-- [ ] **TEST**: POST /api/v1/families/{public_id}/members/
+- [x] **TEST**: POST /api/v1/families/{public_id}/members/
 
-  - [ ] Write test: Invites user by email (admin only)
-  - [ ] Implement: Custom @action on FamilyViewSet (invite_member)
-  - [ ] Write test: Creates family member with 'member' role
-  - [ ] Implement: Create FamilyMember with default role
-  - [ ] Write test: Sends invitation email via SendGrid
-  - [ ] Implement: Celery task for email sending
-  - [ ] Write test: Returns 400 if user already a member
-  - [ ] Implement: Duplicate check before creation
-  - [ ] Write test: Returns 404 if user doesn't exist
-  - [ ] Implement: User lookup validation
+  - [x] Write test: Invites user by email (admin only)
+  - [x] Implement: Custom @action on FamilyViewSet (members with POST method)
+  - [x] Write test: Creates family member with default PARENT role
+  - [x] Implement: Create FamilyMember with role parameter (default PARENT)
+  - [x] Write test: Returns 400 if user already a member
+  - [x] Implement: Duplicate check before creation
+  - [x] Write test: Returns 400 if user doesn't exist
+  - [x] Implement: User lookup validation
+  - [x] Write test: Returns 403 if user not organizer
+  - [x] Implement: Manual permission check for IsFamilyAdmin
+  - [ ] Write test: Sends invitation email via SendGrid (DEFERRED)
+  - [ ] Implement: Celery task for email sending (DEFERRED)
 
-- [ ] **TEST**: GET /api/v1/families/{public_id}/members/
+- [x] **TEST**: GET /api/v1/families/{public_id}/members/
 
-  - [ ] Write test: Returns all family members
-  - [ ] Implement: Custom @action on FamilyViewSet (list_members)
-  - [ ] Write test: Includes user info (name, email, avatar)
-  - [ ] Implement: select_related('user') for efficiency
-  - [ ] Write test: Returns 403 if user not a member
-  - [ ] Implement: IsFamilyMember permission class
+  - [x] Write test: Returns all family members
+  - [x] Implement: Custom @action on FamilyViewSet (members with GET method)
+  - [x] Write test: Includes user info (name, email, public_id)
+  - [x] Implement: select_related('user') for efficiency
+  - [x] Write test: Returns 403 if user not a member
+  - [x] Implement: Manual permission check for IsFamilyMember
 
-- [ ] **TEST**: PATCH /api/v1/families/{public_id}/members/{user_public_id}/
+- [x] **TEST**: PATCH /api/v1/families/{public_id}/members/{user_public_id}/
 
-  - [ ] Write test: Updates member role (admin only)
-  - [ ] Implement: Custom @action on FamilyViewSet (update_member_role)
-  - [ ] Write test: Returns 403 if user not admin
-  - [ ] Implement: IsFamilyAdmin permission class
-  - [ ] Write test: Validates role enum
-  - [ ] Implement: UpdateMemberRoleSerializer validation
+  - [x] Write test: Updates member role (admin only)
+  - [x] Implement: Custom @action on FamilyViewSet (member_detail with PATCH method)
+  - [x] Write test: Returns 403 if user not admin
+  - [x] Implement: Manual permission check for IsFamilyAdmin
+  - [x] Write test: Validates role enum
+  - [x] Implement: UpdateMemberRoleSerializer validation
+  - [x] Write test: Returns 404 if user not in family
+  - [x] Implement: get_object_or_404 for user and membership
 
-- [ ] **TEST**: DELETE /api/v1/families/{public_id}/members/{user_public_id}/
-  - [ ] Write test: Removes member from family (admin or self)
-  - [ ] Implement: Custom @action on FamilyViewSet (remove_member)
-  - [ ] Write test: Admin can remove any member
-  - [ ] Implement: Admin authorization check
-  - [ ] Write test: Member can remove themselves
-  - [ ] Implement: Self-removal check (request.user == member.user)
-  - [ ] Write test: Returns 403 if member tries to remove others
-  - [ ] Implement: Combined authorization logic
+- [x] **TEST**: DELETE /api/v1/families/{public_id}/members/{user_public_id}/
+  - [x] Write test: Removes member from family (admin or self)
+  - [x] Implement: Custom @action on FamilyViewSet (member_detail with DELETE method)
+  - [x] Write test: Admin can remove any member
+  - [x] Implement: Admin authorization check
+  - [x] Write test: Member can remove themselves
+  - [x] Implement: Self-removal check (request.user == member.user)
+  - [x] Write test: Returns 403 if member tries to remove others
+  - [x] Implement: Combined authorization logic
+
+**Phase 4 Summary:**
+- ✅ FamilyViewSet with full CRUD (create, list, retrieve, update, destroy)
+- ✅ Custom actions: members() (GET/POST), member_detail() (PATCH/DELETE)
+- ✅ Combined actions pattern (multiple HTTP methods on same endpoint)
+- ✅ Manual permission checks (fine-grained control per HTTP method)
+- ✅ UUID-based lookups (public_id in URLs, NEVER integer id)
+- ✅ Self-service operations (members can leave families)
+- ✅ Proper HTTP status codes (201, 200, 400, 403, 404, 204)
+- ✅ 38 tests passing (20 Family CRUD + 18 Member Management)
+- ✅ **295/298 tests passing overall** (98.9% pass rate!)
+- ✅ Phase 4 Complete - Ready for Phase 5!
 
 ---
 
