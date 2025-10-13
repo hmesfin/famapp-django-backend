@@ -582,6 +582,10 @@ def verify_otp(request):
         # Delete OTP (one-time use)
         delete_otp(email)
 
+        # Auto-create family for new user (Enhancement 2)
+        from apps.shared.services import create_family_for_user
+        family, family_member = create_family_for_user(user)
+
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
 
@@ -596,6 +600,11 @@ def verify_otp(request):
                     "first_name": user.first_name,
                     "last_name": user.last_name,
                     "email_verified": user.email_verified,
+                },
+                "family": {
+                    "public_id": str(family.public_id),
+                    "name": family.name,
+                    "role": family_member.role,
                 },
             },
             status=status.HTTP_200_OK,

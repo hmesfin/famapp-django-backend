@@ -1404,3 +1404,157 @@ Content-Type: application/json
 - 🌐 **Hybrid Option**: Keep magic links as fallback (low priority users)
 
 ---
+
+### Enhancement 2: Auto-Create Family on User Registration 👨‍👩‍👧‍👦
+
+**Current State**: Users register but must manually create their first family
+**Problem**: Poor onboarding UX - extra step required before using the app
+**Solution**: Automatically create Family + FamilyMember (role=ORGANIZER) on registration
+
+**Why Auto-Create?**
+- ✅ **Better UX**: Users can start using the app immediately after registration
+- ✅ **Reduced friction**: No confusing "create family first" flow
+- ✅ **Mobile-first**: New users land in their family dashboard instantly
+- ✅ **Data consistency**: Every user always has at least one family
+- ✅ **ORGANIZER role**: User is admin of their own family from day one
+
+**Implementation Strategy**:
+1. Create service layer function: `create_family_for_user(user)` in `apps/shared/services.py`
+2. Create Family object (name: "{first_name}'s Family")
+3. Create FamilyMember object linking user to family (role=ORGANIZER)
+4. Call service function from `verify_otp` view after setting email_verified=True
+5. Atomic transaction to ensure both objects created or neither
+6. Handle edge cases (duplicate family creation, transaction rollbacks)
+
+---
+
+### TDD Plan: Auto-Create Family on Registration
+
+**Target**: Automatically create Family + FamilyMember when user completes registration/verification
+
+#### Phase A: Service Layer - Family Auto-Creation Logic
+
+- [ ] **TEST**: Service function for family creation
+  - [ ] Write test: `create_family_for_user(user)` creates family
+  - [ ] Implement: `apps/shared/services.py` - create_family_for_user() function
+  - [ ] Write test: Family name is "{first_name}'s Family"
+  - [ ] Implement: Family.objects.create(name=f"{user.first_name}'s Family", created_by=user)
+  - [ ] Write test: Family created_by set to user
+  - [ ] Implement: Pass created_by=user in Family creation
+  - [ ] Write test: Returns created family object
+  - [ ] Implement: Return family after creation
+  - [ ] Write test: Family has public_id after creation
+  - [ ] Verify: BaseModel auto-generates public_id (already implemented)
+
+#### Phase B: Service Layer - FamilyMember Auto-Creation Logic
+
+- [ ] **TEST**: FamilyMember creation in service function
+  - [ ] Write test: `create_family_for_user()` creates FamilyMember
+  - [ ] Implement: FamilyMember.objects.create(user=user, family=family, role=ORGANIZER)
+  - [ ] Write test: FamilyMember role is ORGANIZER
+  - [ ] Implement: Pass role=FamilyMember.Role.ORGANIZER
+  - [ ] Write test: User is the only member initially
+  - [ ] Verify: family.members.count() == 1 after creation
+  - [ ] Write test: Service returns both family and membership
+  - [ ] Implement: Return tuple (family, family_member) from service function
+
+#### Phase C: Service Layer - Idempotency & Duplicate Prevention
+
+- [ ] **TEST**: Service function idempotency
+  - [ ] Write test: Calling service twice doesn't create duplicate families
+  - [ ] Implement: Check if user.familymember_set.exists() at start of function
+  - [ ] Write test: Returns existing family if already exists
+  - [ ] Implement: Return user's first family if already has one
+  - [ ] Write test: Service is idempotent (safe to call multiple times)
+  - [ ] Verify: No side effects on repeated calls
+
+#### Phase D: Service Layer - Atomic Transaction & Error Handling
+
+- [ ] **TEST**: Transaction safety in service
+  - [ ] Write test: Family and FamilyMember created in single transaction
+  - [ ] Implement: Use @transaction.atomic decorator on service function
+  - [ ] Write test: Rollback if FamilyMember creation fails
+  - [ ] Implement: Let transaction.atomic handle rollback automatically
+  - [ ] Write test: Service raises exception on database errors
+  - [ ] Implement: Let exceptions bubble up for proper error handling
+  - [ ] Write test: Service logs errors before raising
+  - [ ] Implement: try-except with logger.error() then re-raise
+
+#### Phase E: Service Layer - Edge Cases & Data Integrity
+
+- [ ] **TEST**: Edge case handling in service
+  - [ ] Write test: Handle users with empty first_name (fallback: "User's Family")
+  - [ ] Implement: name = f"{user.first_name or 'User'}'s Family"
+  - [ ] Write test: Handle users who already have families (no duplicate creation)
+  - [ ] Implement: Early return with existing family if found
+  - [ ] Write test: Handle None user parameter
+  - [ ] Implement: Raise ValueError if user is None
+  - [ ] Write test: Handle user without email
+  - [ ] Implement: Proper error message for invalid user state
+  - [ ] Write test: Service handles concurrent calls (race condition)
+  - [ ] Implement: Use select_for_update() or get_or_create pattern
+
+#### Phase F: View Integration - Call Service from verify_otp
+
+- [ ] **TEST**: Integration with verify_otp view
+  - [ ] Write test: verify_otp calls create_family_for_user() after email verification
+  - [ ] Implement: Call service in verify_otp view after setting email_verified=True
+  - [ ] Write test: Family created after OTP verification
+  - [ ] Verify: Service is called in correct order (verify → create family → return tokens)
+  - [ ] Write test: Family data returned in verify-otp response
+  - [ ] Implement: Include family data in VerifyOTPSerializer response
+  - [ ] Write test: Service errors don't block verification (optional)
+  - [ ] Implement: Wrap service call in try-except (optional - fail gracefully vs fail loudly)
+  - [ ] Write test: E2E - Register → Verify → GET /families/ → See 1 family
+  - [ ] Implement: Complete E2E test in test_e2e_flows.py
+
+#### Phase G: Service Layer - Logging & Observability
+
+- [ ] **TEST**: Service logging
+  - [ ] Write test: Service logs family creation with user info
+  - [ ] Implement: logger.info(f"Created family '{family.name}' for user {user.email}")
+  - [ ] Write test: Service logs FamilyMember creation
+  - [ ] Implement: logger.info(f"Added {user.email} as ORGANIZER of family {family.public_id}")
+  - [ ] Write test: Service logs when user already has family (skip creation)
+  - [ ] Implement: logger.info(f"User {user.email} already has family, skipping creation")
+  - [ ] Write test: Service logs errors with context
+  - [ ] Implement: logger.error(f"Failed to create family for {user.email}: {error}")
+
+#### Phase H: Admin Interface & Verification
+
+- [ ] **TEST**: Admin interface for auto-created families
+  - [ ] Write test: Auto-created families visible in Django admin
+  - [ ] Verify: FamilyAdmin already configured (Enhancement 1)
+  - [ ] Write test: User can immediately create todos after verification
+  - [ ] Implement: E2E test verifying user permissions after registration
+  - [ ] Write test: Verify family visible in GET /api/v1/families/
+  - [ ] Implement: E2E test for immediate family visibility
+
+#### Phase I: Documentation & Final Testing
+
+- [ ] **TEST**: Comprehensive test coverage
+  - [ ] Write test: 100+ users registered → 100+ families created
+  - [ ] Implement: Bulk registration test with service calls
+  - [ ] Write test: No orphaned families (every family has at least one member)
+  - [ ] Verify: Database constraints ensure integrity
+  - [ ] Write test: Service performance test (< 100ms per call)
+  - [ ] Verify: Service is efficient and doesn't slow down registration
+  - [ ] Update: TODO.md - Document auto-creation feature
+  - [ ] Update: API docs - Mention auto-created family in registration flow
+  - [ ] Run: Full test suite - ensure no regressions
+  - [ ] Verify: All 500+ tests still passing
+
+**Enhancement 2 Summary:**
+- 🎯 **Goal**: Auto-create Family + FamilyMember on user registration for seamless onboarding
+- 🏗️ **Implementation**: Service layer (`apps/shared/services.py`) called from verify_otp view
+- 🧩 **Service Function**: `create_family_for_user(user)` - explicit, testable, reusable
+- 👨‍👩‍👧‍👦 **Family Name**: "{first_name}'s Family" (fallback: "User's Family")
+- 🔐 **Role**: ORGANIZER (user is admin of their own family)
+- 🛡️ **Safety**: Atomic transactions, idempotent, duplicate prevention, error handling
+- 🧪 **TDD Approach**: 30+ tests covering service logic, transactions, edge cases, E2E
+- 🚀 **Deliverables**: Service layer, updated verify_otp view, E2E tests
+- ⏱️ **Estimated Time**: 2-3 hours (with comprehensive testing)
+- 📊 **Impact**: Better UX, reduced onboarding friction, immediate app usability
+- ✅ **Why Service Layer**: Explicit, testable, reusable, easier to debug than signals
+
+---

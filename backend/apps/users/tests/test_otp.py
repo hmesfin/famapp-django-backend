@@ -736,6 +736,48 @@ class TestOTPVerification:
         assert profile_response.data["user"]["email"] == self.user.email
         assert profile_response.data["user"]["email_verified"] is True
 
+    def test_verify_otp_creates_family_for_user(self):
+        """OTP verification should auto-create family for new user (Enhancement 2)."""
+        from apps.users.otp import store_otp
+        from apps.shared.models import Family, FamilyMember
+
+        # Arrange: Store OTP in Redis
+        otp = "123456"
+        store_otp(self.user.email, otp)
+
+        # Verify no family exists initially
+        assert Family.objects.count() == 0
+        assert FamilyMember.objects.count() == 0
+
+        # Act: POST to /api/auth/verify-otp/
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: Family and FamilyMember created
+        assert response.status_code == 200
+        assert Family.objects.count() == 1
+        assert FamilyMember.objects.count() == 1
+
+        # Verify family data in response
+        assert "family" in response.data
+        family_data = response.data["family"]
+        assert "public_id" in family_data
+        assert family_data["name"] == "John's Family"
+        assert family_data["role"] == FamilyMember.Role.ORGANIZER
+
+        # Verify database objects
+        family = Family.objects.first()
+        assert family.name == "John's Family"
+        assert family.created_by == self.user
+
+        member = FamilyMember.objects.first()
+        assert member.user == self.user
+        assert member.family == family
+        assert member.role == FamilyMember.Role.ORGANIZER
+
 
 @pytest.mark.django_db
 class TestOTPResend:
