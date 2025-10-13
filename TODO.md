@@ -1158,51 +1158,98 @@ This section documents post-MVP enhancements to improve UX, security, and mobile
 - ✅ **25 total OTP tests passing** (15 Phase A + 10 Phase B)
 - ✅ **No regressions**: All existing tests still passing
 
-#### Phase C: OTP Verification Endpoint
+#### Phase C: OTP Verification Endpoint ✅ COMPLETE
 
-- [ ] **TEST**: POST /api/auth/verify-otp/
-  - [ ] Write test: Verify OTP with correct code marks user as verified
-  - [ ] Implement: `apps/users/api/auth_views.py` - VerifyOTPView
-  - [ ] Write test: Returns 200 with JWT tokens on success
-  - [ ] Implement: Generate JWT tokens after verification
-  - [ ] Write test: Returns 400 with "Invalid OTP" if code wrong
-  - [ ] Implement: OTP validation logic
-  - [ ] Write test: Returns 400 with "OTP expired" if code expired
-  - [ ] Implement: Check Redis key existence (expired keys return None)
-  - [ ] Write test: Returns 400 with "OTP not found" if no OTP for email
-  - [ ] Implement: Handle missing OTP codes
-  - [ ] Write test: OTP is deleted from Redis after successful verification
-  - [ ] Implement: cache.delete() after verification
-  - [ ] Write test: Same OTP cannot be used twice
-  - [ ] Implement: One-time use enforcement
+- [x] **TEST**: POST /api/auth/verify-otp/ ✅ 12 tests passing!
+  - [x] Write test: Verify OTP with correct code marks user as verified
+  - [x] Implement: `apps/users/api/auth_views.py` - verify_otp view (function-based)
+  - [x] Write test: Returns 200 with JWT tokens on success
+  - [x] Implement: Generate JWT tokens after verification using drf-simplejwt
+  - [x] Write test: Returns 400 with "Invalid OTP" if code wrong
+  - [x] Implement: OTP validation logic comparing stored vs provided code
+  - [x] Write test: Returns 400 with "OTP expired" if code expired
+  - [x] Implement: Check Redis key existence (expired keys return None)
+  - [x] Write test: Returns 400 with "OTP not found" if no OTP for email
+  - [x] Implement: Handle missing OTP codes gracefully
+  - [x] Write test: OTP is deleted from Redis after successful verification
+  - [x] Implement: delete_otp() after verification (one-time use)
+  - [x] Write test: Same OTP cannot be used twice
+  - [x] Implement: One-time use enforcement via delete
+  - [x] Write test: User.email_verified set to True after verification
+  - [x] Write test: Returns user data in response
+  - [x] Write test: Logs successful verification
 
-#### Phase D: OTP Resend Endpoint
+**Phase C Summary:**
+- ✅ **verify_otp view implemented**: POST /api/auth/verify-otp/
+- ✅ **12 comprehensive tests passing**: Verification, JWT tokens, errors (100%)
+- ✅ **JWT integration**: Returns access + refresh tokens using drf-simplejwt
+- ✅ **One-time use**: OTP deleted after successful verification
+- ✅ **User data**: Returns email, first_name, last_name, email_verified
+- ✅ **Logging**: Success (INFO) logging for security audit
+- ✅ **URL route added**: /api/auth/verify-otp/ in auth_urls.py
+- ✅ **37 total OTP tests passing** (15 Phase A + 10 Phase B + 12 Phase C)
+- ✅ **No regressions**: All existing tests still passing
 
-- [ ] **TEST**: POST /api/auth/resend-otp/
-  - [ ] Write test: Resend OTP generates new code
-  - [ ] Implement: `apps/users/api/auth_views.py` - ResendOTPView
-  - [ ] Write test: Returns 200 with "OTP sent" message
-  - [ ] Implement: Generate and send new OTP
-  - [ ] Write test: Returns 429 if resend requested < 60 seconds ago
-  - [ ] Implement: Rate limiting using Redis (track last_sent timestamp)
-  - [ ] Write test: Old OTP is invalidated when new OTP sent
-  - [ ] Implement: cache.delete() old key, cache.set() new key
-  - [ ] Write test: Returns 404 if user not found
-  - [ ] Implement: User existence validation
-  - [ ] Write test: Returns 400 if user already verified
-  - [ ] Implement: Check user.email_verified before sending
+#### Phase D: OTP Resend Endpoint ✅ COMPLETE
 
-#### Phase E: Registration Flow Update
+- [x] **TEST**: POST /api/auth/resend-otp/ ✅ 12 tests passing!
+  - [x] Write test: Resend OTP generates new code
+  - [x] Implement: `apps/users/api/auth_views.py` - resend_otp view (function-based)
+  - [x] Write test: Returns 200 with "OTP sent" message
+  - [x] Implement: Generate and send new OTP via send_otp_email()
+  - [x] Write test: Returns 429 if resend requested < 60 seconds ago
+  - [x] Implement: Rate limiting using Redis (key: f"otp_last_sent:{email}", TTL: 60)
+  - [x] Write test: Old OTP is invalidated when new OTP sent
+  - [x] Implement: store_otp() overwrites old key automatically
+  - [x] Write test: Returns 404 if user not found
+  - [x] Implement: User.objects.get(email=email) with exception handling
+  - [x] Write test: Returns 400 if user already verified
+  - [x] Implement: Check user.email_verified before sending
+  - [x] Write test: Rate limit key expires after 60 seconds
+  - [x] Write test: Resend sends email to user
+  - [x] Write test: Logs success after sending
 
-- [ ] **TEST**: POST /api/auth/register/ integration with OTP
-  - [ ] Write test: Registration sends OTP email (not verification link)
-  - [ ] Implement: Update CustomRegisterSerializer to call send_otp_email()
-  - [ ] Write test: Registration returns 201 with "Check email for OTP" message
-  - [ ] Implement: Response message update
-  - [ ] Write test: User cannot login until OTP verified
-  - [ ] Verify: Existing email_verified check in login (already implemented)
-  - [ ] Write test: Registration includes email in response (for OTP verification flow)
-  - [ ] Implement: Return email in registration response
+**Phase D Summary:**
+- ✅ **resend_otp view implemented**: POST /api/auth/resend-otp/
+- ✅ **12 comprehensive tests passing**: Resend, rate limiting, validation (100%)
+- ✅ **Rate limiting**: 60-second cooldown using Redis
+- ✅ **OTP overwriting**: New OTP replaces old one automatically
+- ✅ **User validation**: 404 if user not found, 400 if already verified
+- ✅ **Email delivery**: Calls send_otp_email() from Phase B
+- ✅ **Logging**: Success (INFO) logging for audit trail
+- ✅ **URL route added**: /api/auth/resend-otp/ in auth_urls.py
+- ✅ **49 total OTP tests passing** (15 Phase A + 10 Phase B + 12 Phase C + 12 Phase D)
+- ✅ **No regressions**: All existing tests still passing
+
+#### Phase E: Registration Flow Integration ✅ COMPLETE
+
+- [x] **TEST**: POST /api/auth/register/ integration with OTP ✅ 8 tests passing!
+  - [x] Write test: Registration sends OTP email (not verification link)
+  - [x] Implement: Updated register view to call send_otp_email()
+  - [x] Write test: Registration returns 201 with "Check email for OTP" message
+  - [x] Implement: Response message updated to mention OTP verification
+  - [x] Write test: User cannot login until OTP verified
+  - [x] Verify: Existing email_verified check in login (already enforced)
+  - [x] Write test: Registration includes email in response (for OTP verification flow)
+  - [x] Implement: Email returned in registration response
+  - [x] Write test: Registration stores OTP in Redis
+  - [x] Write test: Registration email contains OTP code
+  - [x] Write test: User can verify OTP after registration
+  - [x] Write test: User can login after OTP verification
+
+**Phase E Summary:**
+- ✅ **register view updated**: Replaced magic link with OTP email
+- ✅ **8 comprehensive tests passing**: Registration flow integration (100%)
+- ✅ **OTP flow**: signup → OTP email → verify OTP → login
+- ✅ **Response updated**: Returns email for OTP verification flow
+- ✅ **Email integration**: Calls send_otp_email() from Phase B
+- ✅ **Redis storage**: OTP stored automatically during registration
+- ✅ **Login enforcement**: Existing email_verified check prevents login
+- ✅ **E2E tested**: Full registration → verification → login flow
+- ✅ **57 total OTP tests passing** (15 Phase A + 10 Phase B + 12 Phase C + 12 Phase D + 8 Phase E)
+- ✅ **No regressions**: All existing tests still passing
+
+**Phases C, D, E Complete - OTP System Production-Ready!** 🎉
 
 #### Phase F: Login Flow Update
 
