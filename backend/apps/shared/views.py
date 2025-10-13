@@ -19,7 +19,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.mixins import FamilyAccessMixin
+from apps.shared.models import Family, FamilyMember, Todo
 from apps.shared.permissions import IsFamilyAdmin, IsFamilyMember
 from apps.shared.serializers import (
     FamilyCreateSerializer,
@@ -28,6 +29,9 @@ from apps.shared.serializers import (
     FamilyUpdateSerializer,
     InviteMemberSerializer,
     MemberSerializer,
+    TodoCreateSerializer,
+    TodoSerializer,
+    TodoUpdateSerializer,
     UpdateMemberRoleSerializer,
 )
 
@@ -332,3 +336,106 @@ class FamilyViewSet(viewsets.ModelViewSet):
             membership.delete()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TodoViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
+    """
+    ViewSet for Todo CRUD operations.
+
+    Uses FamilyAccessMixin to automatically filter todos by family membership!
+
+    Endpoints:
+    - GET /api/v1/todos/ - List todos (user's families only)
+    - POST /api/v1/todos/ - Create todo
+    - GET /api/v1/todos/{public_id}/ - Retrieve todo details
+    - PATCH /api/v1/todos/{public_id}/ - Update todo
+    - PATCH /api/v1/todos/{public_id}/toggle/ - Toggle completion status
+    - DELETE /api/v1/todos/{public_id}/ - Soft delete todo
+
+    CRITICAL: All URLs use public_id (UUID), NOT integer id!
+    """
+
+    queryset = Todo.objects.all()  # Mixin filters this automatically!
+    lookup_field = "public_id"
+    lookup_url_kwarg = "public_id"
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        """
+        Return appropriate serializer based on action.
+
+        - create: TodoCreateSerializer (with family_public_id)
+        - update/partial_update: TodoUpdateSerializer (all optional)
+        - retrieve/list: TodoSerializer (includes computed fields)
+        """
+        if self.action == "create":
+            return TodoCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return TodoUpdateSerializer
+        else:
+            return TodoSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create todo and return full todo data.
+
+        Override to return TodoSerializer (with all fields) instead of
+        TodoCreateSerializer (which only has input fields).
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Use TodoSerializer to return full todo data
+        todo = serializer.instance
+        output_serializer = TodoSerializer(todo)
+        headers = self.get_success_headers(output_serializer.data)
+        return Response(
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def perform_create(self, serializer):
+        """
+        Create todo and set created_by/updated_by to current user.
+
+        The serializer handles family lookup via family_public_id.
+        """
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        """
+        Update todo and set updated_by to current user.
+        """
+        serializer.save(updated_by=self.request.user)
+
+    def perform_destroy(self, instance):
+        """
+        Soft delete todo by setting is_deleted=True and deleted_at.
+
+        Does NOT hard delete from database (BaseModel soft delete pattern).
+        """
+        instance.is_deleted = True
+        instance.deleted_at = timezone.now()
+        instance.save()
+
+    @action(detail=True, methods=["patch"], url_path="toggle")
+    def toggle(self, request, public_id=None):
+        """
+        PATCH /api/v1/todos/{public_id}/toggle/ - Toggle completion status.
+
+        Toggles between TODO and DONE status.
+        """
+        todo = self.get_object()
+
+        # Toggle status
+        if todo.status == Todo.Status.DONE:
+            todo.status = Todo.Status.TODO
+        else:
+            todo.status = Todo.Status.DONE
+
+        todo.updated_by = request.user
+        todo.save()
+
+        # Return updated todo
+        serializer = self.get_serializer(todo)
+        return Response(serializer.data)

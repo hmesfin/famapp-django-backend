@@ -185,20 +185,29 @@ class TodoCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating a new todo.
 
+    Accepts family_public_id and converts to family object.
+
     Validates:
     - title: required, 1-200 characters
     - due_date: must be in the future (if provided)
+    - family_public_id: must be a valid family where user is a member
     """
+
+    family_public_id = serializers.UUIDField(write_only=True)
+    assigned_to_public_id = serializers.UUIDField(
+        write_only=True, required=False, allow_null=True
+    )
 
     class Meta:
         model = Todo
         fields = [
+            "family_public_id",
             "title",
             "description",
             "status",
             "priority",
             "due_date",
-            "assigned_to",
+            "assigned_to_public_id",
         ]
 
     def validate_title(self, value):
@@ -215,6 +224,61 @@ class TodoCreateSerializer(serializers.ModelSerializer):
             if value < timezone.now():
                 raise serializers.ValidationError("Due date must be in the future.")
         return value
+
+    def validate_family_public_id(self, value):
+        """Validate that family exists and user is a member."""
+        from apps.shared.models import Family, FamilyMember
+
+        try:
+            family = Family.objects.get(public_id=value, is_deleted=False)
+        except Family.DoesNotExist:
+            raise serializers.ValidationError("Family not found.")
+
+        # Check if user is a member of the family
+        request = self.context.get("request")
+        if request and request.user:
+            if not FamilyMember.objects.filter(
+                family=family, user=request.user
+            ).exists():
+                raise serializers.ValidationError(
+                    "You must be a member of this family to create todos."
+                )
+
+        return value
+
+    def validate_assigned_to_public_id(self, value):
+        """Validate that assigned_to user exists."""
+        if value:
+            from django.contrib.auth import get_user_model
+
+            User = get_user_model()
+            try:
+                User.objects.get(public_id=value)
+            except User.DoesNotExist:
+                raise serializers.ValidationError("Assigned user not found.")
+        return value
+
+    def create(self, validated_data):
+        """Create todo and convert public_ids to actual objects."""
+        from apps.shared.models import Family
+
+        # Extract public_ids
+        family_public_id = validated_data.pop("family_public_id")
+        assigned_to_public_id = validated_data.pop("assigned_to_public_id", None)
+
+        # Get family object
+        family = Family.objects.get(public_id=family_public_id)
+        validated_data["family"] = family
+
+        # Get assigned_to user if provided
+        if assigned_to_public_id:
+            from django.contrib.auth import get_user_model
+
+            User = get_user_model()
+            assigned_to = User.objects.get(public_id=assigned_to_public_id)
+            validated_data["assigned_to"] = assigned_to
+
+        return super().create(validated_data)
 
 
 class TodoUpdateSerializer(serializers.ModelSerializer):

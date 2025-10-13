@@ -10,7 +10,7 @@ Ham Dog & TC wiring up the APIs! 🚀
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from apps.shared.views import FamilyViewSet
+from apps.shared.views import FamilyViewSet, TodoViewSet
 
 # Create DRF router
 router = DefaultRouter()
@@ -24,6 +24,16 @@ router = DefaultRouter()
 # - PATCH  /api/v1/families/{public_id}/  -> partial_update
 # - DELETE /api/v1/families/{public_id}/  -> destroy
 router.register(r"families", FamilyViewSet, basename="family")
+
+# Todo endpoints
+# This creates:
+# - GET    /api/v1/todos/                 -> list
+# - POST   /api/v1/todos/                 -> create
+# - GET    /api/v1/todos/{public_id}/     -> retrieve
+# - PATCH  /api/v1/todos/{public_id}/     -> partial_update
+# - DELETE /api/v1/todos/{public_id}/     -> destroy
+# - PATCH  /api/v1/todos/{public_id}/toggle/ -> toggle completion
+router.register(r"todos", TodoViewSet, basename="todo")
 
 urlpatterns = [
     path("", include(router.urls)),

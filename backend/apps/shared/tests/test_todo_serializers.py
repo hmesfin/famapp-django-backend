@@ -13,8 +13,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from apps.shared.models import Family
-from apps.shared.models import Todo
+from apps.shared.models import Family, FamilyMember, Todo
 
 User = get_user_model()
 
@@ -54,14 +53,25 @@ class TestTodoCreateSerializer:
         """Test that valid todo data passes validation."""
         from apps.shared.serializers import TodoCreateSerializer
 
+        # Create a family for the test
+        user = User.objects.create_user(
+            email="test@example.com", password="testpass123"
+        )
+        family = Family.objects.create(name="Test Family", created_by=user)
+        FamilyMember.objects.create(
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+        )
+
         future_date = timezone.now() + timedelta(days=1)
         serializer = TodoCreateSerializer(
             data={
+                "family_public_id": str(family.public_id),
                 "title": "Buy groceries",
                 "description": "Milk, eggs, bread",
                 "priority": "high",
                 "due_date": future_date,
-            }
+            },
+            context={"request": type("obj", (object,), {"user": user})},
         )
         assert serializer.is_valid(), serializer.errors
 
