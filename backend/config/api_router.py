@@ -13,8 +13,6 @@ app_name = "api"
 urlpatterns = [
     # Auth endpoints
     path("auth/", include("apps.users.api.auth_urls", namespace="auth")),
-    # Invitations endpoints - TDD-driven invitation system!
-    path("invitations/", include("apps.invitations.api.urls", namespace="invitations")),
     # Router URLs
     *router.urls,
 ]

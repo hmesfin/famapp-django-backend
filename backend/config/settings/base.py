@@ -85,9 +85,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "apps.users",
-    "apps.permissions",
-    "apps.shared",  # Ham Dog & TC's project management system!
-    "apps.invitations",  # TDD-driven invitation system!
+    "apps.shared",  # FamApp shared models (Family, Todo, Pet, etc.)
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

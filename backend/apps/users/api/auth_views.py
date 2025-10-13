@@ -1,12 +1,11 @@
 """
 Authentication API Views
-Ham Dog & TC's JWT Authentication with RBAC Integration
+FamApp JWT Authentication - Simple & Clean
 
 Following the Ten Commandments:
 - JWT tokens for stateless authentication
-- RBAC integration in token responses
+- Email/Phone + password authentication
 - Clean error handling
-- Template-ready for users
 """
 
 from django.contrib.auth import get_user_model
@@ -15,20 +14,20 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from apps.permissions.models import Permission, Role
 from .serializers import UserCreateSerializer
 from .auth_utils import send_verification_email
+
+User = get_user_model()
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
-    Custom JWT serializer with hybrid id/uuid approach and RBAC data.
+    Custom JWT serializer that uses email instead of username.
 
-    Uses integer id as primary key (JWT compatible) with UUID field for external URLs.
-    Uses email instead of username for authentication.
+    Includes basic user info in the response.
     """
 
     username_field = "email"
@@ -36,109 +35,71 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-
-        # Keep it simple for now - no custom claims
-        # token['user_id'] = user.pk
-        # token['email'] = user.email
-
+        # Keep it simple - standard JWT claims only
         return token
 
     def validate(self, attrs):
         # First, perform standard validation
         data = super().validate(attrs)
 
-        # Check if user has verified their email
+        # Check if user has verified their email (optional for now)
         user = self.user
         if not user.email_verified:
-            # Send a new verification email (give them a lifeline!)
+            # Send a new verification email
             email_sent = send_verification_email(user)
 
-            # Hard block login - no tokens for schemers!
+            # Warn but allow login (soft verification)
             from rest_framework import serializers
 
             raise serializers.ValidationError(
                 {
                     "non_field_errors": [
-                        "Email verification required. We've sent you a new verification link. Please check your inbox and verify your email before logging in."
+                        "Email verification required. We've sent you a new verification link."
                     ],
                     "requires_email_verification": True,
                     "email": user.email,
                     "email_sent": email_sent,
-                    "message": "Verification email sent!"
-                    if email_sent
-                    else "Failed to send verification email. Please use the resend option.",
                 }
             )
 
-        # Add user data and RBAC info to response
+        # Add user data to response
         user_data = {
-            "id": user.pk,  # Integer primary key
-            "public_id": str(user.public_id),  # Public UUID for external URLs
+            "id": user.pk,
+            "public_id": str(user.public_id),
             "email": user.email,
+            "phone_number": user.phone_number if hasattr(user, "phone_number") else None,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "is_active": user.is_active,
-            "is_staff": user.is_staff,
-            "is_superuser": user.is_superuser,
             "date_joined": user.date_joined,
             "last_login": user.last_login,
         }
 
-        # Get RBAC data
-        rbac_data = {
-            "roles": [role.code_name for role in user.get_active_roles()],
-            "permissions": [perm.code_name for perm in user.get_all_permissions()],
-        }
-
-        data.update(
-            {
-                "user": user_data,
-                "rbac": rbac_data,
-            }
-        )
+        data["user"] = user_data
 
         return data
 
 
-User = get_user_model()
-
-
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
-    Custom JWT token view that includes user data and RBAC info.
+    Custom JWT token view that includes user data.
 
-    This extends the default JWT view to return user information
-    and permissions alongside the tokens.
+    Accepts email OR phone number + password.
     """
 
     serializer_class = CustomTokenObtainPairSerializer
-
-
-class CustomTokenRefreshView(TokenRefreshView):
-    """
-    Custom token refresh view that can optionally return updated user data.
-    """
-
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-
-        if response.status_code == 200:
-            # You can add updated user data here if needed
-            # For now, just return the new access token
-            pass
-
-        return response
 
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
     """
-    Register a new user with email verification requirement.
+    Register a new user with email or phone number.
 
     Expected payload:
     {
-        "email": "user@example.com",
+        "email": "user@example.com",  # Required OR phone_number
+        "phone_number": "+1234567890",  # Required OR email
         "password": "secure_password",
         "first_name": "John",
         "last_name": "Doe"
@@ -146,36 +107,28 @@ def register(request):
 
     Flow:
     1. Create user with email_verified=False
-    2. Assign Guest role automatically
-    3. Send email verification with signed token
-    4. Return user info with JWT tokens (user can login but will get warnings)
+    2. Send email verification (if email provided)
+    3. Return user info (tokens on login only)
     """
-    from apps.permissions.models import Role
-
     serializer = UserCreateSerializer(data=request.data)
 
     if serializer.is_valid():
         # Create user with email verification required
         user = serializer.save()
-        user.email_verified = False  # Our own email verification field
+        user.email_verified = False
         user.save()
 
-        # Assign Guest role automatically
-        try:
-            guest_role = Role.objects.get(code_name="guest")
-            user.assign_role(guest_role)
-        except Role.DoesNotExist:
-            # If Guest role doesn't exist, create it or handle gracefully
-            pass
+        # Send verification email if email provided
+        email_sent = False
+        if user.email:
+            email_sent = send_verification_email(user)
 
-        # Send verification email using utility function
-        email_sent = send_verification_email(user)
-
-        # Prepare user data (no tokens until verification!)
+        # Prepare user data (no tokens until login)
         user_data = {
             "id": user.pk,
             "public_id": str(user.public_id),
             "email": user.email,
+            "phone_number": user.phone_number if hasattr(user, "phone_number") else None,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "is_active": user.is_active,
@@ -186,9 +139,14 @@ def register(request):
         return Response(
             {
                 "user": user_data,
-                "message": "Registration successful! Please check your email to verify your account.",
+                "message": "Registration successful! "
+                + (
+                    "Please check your email to verify your account."
+                    if email_sent
+                    else "You can now log in."
+                ),
                 "email_sent": email_sent,
-                "requires_email_verification": True,
+                "requires_email_verification": bool(user.email),
             },
             status=status.HTTP_201_CREATED,
         )
@@ -223,7 +181,7 @@ def logout(request):
 @api_view(["GET"])
 def user_profile(request):
     """
-    Get current user's profile with RBAC data.
+    Get current user's profile.
 
     Requires authentication.
     """
@@ -233,28 +191,16 @@ def user_profile(request):
         "id": user.pk,
         "public_id": str(user.public_id),
         "email": user.email,
+        "phone_number": user.phone_number if hasattr(user, "phone_number") else None,
         "first_name": user.first_name,
         "last_name": user.last_name,
         "is_active": user.is_active,
-        "is_staff": user.is_staff,
-        "is_superuser": user.is_superuser,
+        "email_verified": user.email_verified,
         "date_joined": user.date_joined,
         "last_login": user.last_login,
     }
 
-    # Get RBAC data
-    rbac_data = {
-        "roles": [role.code_name for role in user.get_active_roles()],
-        "permissions": [perm.code_name for perm in user.get_all_permissions()],
-    }
-
-    return Response(
-        {
-            "user": user_data,
-            "rbac": rbac_data,
-        },
-        status=status.HTTP_200_OK,
-    )
+    return Response({"user": user_data}, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -283,67 +229,6 @@ def auth_check(request):
         )
 
 
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def available_permissions(request):
-    """
-    Get all available permissions in the system.
-
-    This is useful for frontend to know what permissions exist.
-    """
-    permissions = Permission.objects.filter(is_active=True).order_by("category", "name")
-
-    permissions_data = []
-    for perm in permissions:
-        permissions_data.append(
-            {
-                "code_name": perm.code_name,
-                "name": perm.name,
-                "description": perm.description,
-                "category": perm.category,
-            }
-        )
-
-    return Response(
-        {
-            "permissions": permissions_data,
-        },
-        status=status.HTTP_200_OK,
-    )
-
-
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def available_roles(request):
-    """
-    Get all available roles in the system.
-
-    This is useful for frontend to know what roles exist.
-    """
-    roles = Role.objects.filter(is_active=True).order_by("name")
-
-    roles_data = []
-    for role in roles:
-        roles_data.append(
-            {
-                "code_name": role.code_name,
-                "name": role.name,
-                "description": role.description,
-                "is_system_role": role.is_system_role,
-                "permissions": [
-                    perm.code_name for perm in role.permissions.filter(is_active=True)
-                ],
-            }
-        )
-
-    return Response(
-        {
-            "roles": roles_data,
-        },
-        status=status.HTTP_200_OK,
-    )
-
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def forgot_password(request):
@@ -356,7 +241,6 @@ def forgot_password(request):
     }
     """
     from django.contrib.auth.forms import PasswordResetForm
-    from django.contrib.sites.shortcuts import get_current_site
 
     email = request.data.get("email")
     if not email:
@@ -398,6 +282,71 @@ def forgot_password(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+def reset_password_confirm(request):
+    """
+    Confirm password reset with token and set new password.
+
+    Expected payload:
+    {
+        "token": "password_reset_token",
+        "uid": "encoded_user_id",
+        "password": "new_password",
+        "password_confirm": "new_password"
+    }
+    """
+    from django.contrib.auth.forms import SetPasswordForm
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.http import urlsafe_base64_decode
+
+    token = request.data.get("token")
+    uid = request.data.get("uid")
+    password = request.data.get("password")
+    password_confirm = request.data.get("password_confirm")
+
+    if not all([token, uid, password, password_confirm]):
+        return Response(
+            {"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if password != password_confirm:
+        return Response(
+            {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        # Decode the user ID
+        user_id = urlsafe_base64_decode(uid).decode()
+        user = User.objects.get(pk=user_id)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response(
+            {"error": "Invalid reset link"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Check if token is valid
+    if not default_token_generator.check_token(user, token):
+        return Response(
+            {"error": "Invalid or expired reset token"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Set the new password
+    form = SetPasswordForm(
+        user, {"new_password1": password, "new_password2": password_confirm}
+    )
+    if form.is_valid():
+        form.save()
+        return Response(
+            {
+                "message": "Password has been reset successfully. You can now log in with your new password."
+            },
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
 def verify_email(request):
     """
     Verify user's email address using signed token.
@@ -407,7 +356,7 @@ def verify_email(request):
         "token": "signed_verification_token"
     }
     """
-    from django.core.signing import Signer, BadSignature
+    from django.core.signing import BadSignature, Signer
 
     token = request.data.get("token")
     if not token:
@@ -538,68 +487,3 @@ def resend_verification_email(request):
             },
             status=status.HTTP_200_OK,
         )
-
-
-@api_view(["POST"])
-@permission_classes([AllowAny])
-def reset_password_confirm(request):
-    """
-    Confirm password reset with token and set new password.
-
-    Expected payload:
-    {
-        "token": "password_reset_token",
-        "uid": "encoded_user_id",
-        "password": "new_password",
-        "password_confirm": "new_password"
-    }
-    """
-    from django.contrib.auth.forms import SetPasswordForm
-    from django.contrib.auth.tokens import default_token_generator
-    from django.utils.http import urlsafe_base64_decode
-
-    token = request.data.get("token")
-    uid = request.data.get("uid")
-    password = request.data.get("password")
-    password_confirm = request.data.get("password_confirm")
-
-    if not all([token, uid, password, password_confirm]):
-        return Response(
-            {"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    if password != password_confirm:
-        return Response(
-            {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    try:
-        # Decode the user ID
-        user_id = urlsafe_base64_decode(uid).decode()
-        user = User.objects.get(pk=user_id)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        return Response(
-            {"error": "Invalid reset link"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    # Check if token is valid
-    if not default_token_generator.check_token(user, token):
-        return Response(
-            {"error": "Invalid or expired reset token"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    # Set the new password
-    form = SetPasswordForm(
-        user, {"new_password1": password, "new_password2": password_confirm}
-    )
-    if form.is_valid():
-        form.save()
-        return Response(
-            {
-                "message": "Password has been reset successfully. You can now log in with your new password."
-            },
-            status=status.HTTP_200_OK,
-        )
-    else:
-        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
