@@ -382,23 +382,60 @@ class EventCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating a new schedule event.
 
+    Accepts family_public_id and converts to family object.
+
     Validates:
     - title: required
     - start_time: required
     - end_time: required, must be after start_time
+    - family_public_id: must be a valid family where user is a member
     """
+
+    family_public_id = serializers.UUIDField(write_only=True)
+    assigned_to_public_id = serializers.UUIDField(
+        write_only=True, required=False, allow_null=True
+    )
 
     class Meta:
         model = ScheduleEvent
         fields = [
+            "family_public_id",
             "title",
             "description",
             "event_type",
             "start_time",
             "end_time",
             "location",
-            "assigned_to",
+            "assigned_to_public_id",
         ]
+
+    def validate_family_public_id(self, value):
+        """Validate that family exists and user is a member."""
+        try:
+            family = Family.objects.get(public_id=value, is_deleted=False)
+        except Family.DoesNotExist:
+            raise serializers.ValidationError("Family not found.")
+
+        # Check if user is a member of the family
+        request = self.context.get("request")
+        if request and request.user:
+            if not FamilyMember.objects.filter(
+                family=family, user=request.user
+            ).exists():
+                raise serializers.ValidationError(
+                    "You must be a member of this family to create events."
+                )
+
+        return value
+
+    def validate_assigned_to_public_id(self, value):
+        """Validate that assigned_to user exists."""
+        if value:
+            try:
+                User.objects.get(public_id=value)
+            except User.DoesNotExist:
+                raise serializers.ValidationError("Assigned user not found.")
+        return value
 
     def validate(self, data):
         """Validate that end_time is after start_time."""
@@ -411,6 +448,23 @@ class EventCreateSerializer(serializers.ModelSerializer):
             )
 
         return data
+
+    def create(self, validated_data):
+        """Create event and convert public_ids to actual objects."""
+        # Extract public_ids
+        family_public_id = validated_data.pop("family_public_id")
+        assigned_to_public_id = validated_data.pop("assigned_to_public_id", None)
+
+        # Get family object
+        family = Family.objects.get(public_id=family_public_id)
+        validated_data["family"] = family
+
+        # Get assigned_to user if provided
+        if assigned_to_public_id:
+            assigned_to = User.objects.get(public_id=assigned_to_public_id)
+            validated_data["assigned_to"] = assigned_to
+
+        return super().create(validated_data)
 
 
 class EventUpdateSerializer(serializers.ModelSerializer):
@@ -500,20 +554,55 @@ class GroceryCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating a new grocery item.
 
+    Accepts family_public_id and converts to family object.
+
     Validates:
     - name: required, 1-200 characters
     - category: optional, must be valid enum
+    - family_public_id: must be a valid family where user is a member
     """
+
+    family_public_id = serializers.UUIDField(write_only=True)
 
     class Meta:
         model = GroceryItem
-        fields = ["name", "quantity", "unit", "category"]
+        fields = ["family_public_id", "name", "quantity", "unit", "category"]
 
     def validate_name(self, value):
         """Validate that name is not empty."""
         if not value or not value.strip():
             raise serializers.ValidationError("Name cannot be empty.")
         return value
+
+    def validate_family_public_id(self, value):
+        """Validate that family exists and user is a member."""
+        try:
+            family = Family.objects.get(public_id=value, is_deleted=False)
+        except Family.DoesNotExist:
+            raise serializers.ValidationError("Family not found.")
+
+        # Check if user is a member of the family
+        request = self.context.get("request")
+        if request and request.user:
+            if not FamilyMember.objects.filter(
+                family=family, user=request.user
+            ).exists():
+                raise serializers.ValidationError(
+                    "You must be a member of this family to create grocery items."
+                )
+
+        return value
+
+    def create(self, validated_data):
+        """Create grocery item and convert public_id to actual object."""
+        # Extract family_public_id
+        family_public_id = validated_data.pop("family_public_id")
+
+        # Get family object
+        family = Family.objects.get(public_id=family_public_id)
+        validated_data["family"] = family
+
+        return super().create(validated_data)
 
 
 class GroceryUpdateSerializer(serializers.ModelSerializer):

@@ -20,13 +20,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.shared.mixins import FamilyAccessMixin
-from apps.shared.models import Family, FamilyMember, Todo
+from apps.shared.models import Family, FamilyMember, GroceryItem, ScheduleEvent, Todo
 from apps.shared.permissions import IsFamilyAdmin, IsFamilyMember
 from apps.shared.serializers import (
+    EventCreateSerializer,
+    EventSerializer,
+    EventUpdateSerializer,
     FamilyCreateSerializer,
     FamilyDetailSerializer,
     FamilySerializer,
     FamilyUpdateSerializer,
+    GroceryCreateSerializer,
+    GrocerySerializer,
+    GroceryUpdateSerializer,
     InviteMemberSerializer,
     MemberSerializer,
     TodoCreateSerializer,
@@ -438,4 +444,176 @@ class TodoViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
 
         # Return updated todo
         serializer = self.get_serializer(todo)
+        return Response(serializer.data)
+
+
+class ScheduleEventViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
+    """
+    ViewSet for ScheduleEvent CRUD operations.
+
+    Uses FamilyAccessMixin to automatically filter events by family membership!
+
+    Endpoints:
+    - GET /api/v1/events/ - List events (user's families only)
+    - POST /api/v1/events/ - Create event
+    - GET /api/v1/events/{public_id}/ - Retrieve event details
+    - PATCH /api/v1/events/{public_id}/ - Update event
+    - DELETE /api/v1/events/{public_id}/ - Soft delete event
+
+    CRITICAL: All URLs use public_id (UUID), NOT integer id!
+    """
+
+    queryset = ScheduleEvent.objects.all()  # Mixin filters this automatically!
+    lookup_field = "public_id"
+    lookup_url_kwarg = "public_id"
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        """
+        Return appropriate serializer based on action.
+
+        - create: EventCreateSerializer (with family_public_id)
+        - update/partial_update: EventUpdateSerializer (all optional)
+        - retrieve/list: EventSerializer (includes computed fields)
+        """
+        if self.action == "create":
+            return EventCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return EventUpdateSerializer
+        else:
+            return EventSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create event and return full event data.
+
+        Override to return EventSerializer (with all fields) instead of
+        EventCreateSerializer (which only has input fields).
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Use EventSerializer to return full event data
+        event = serializer.instance
+        output_serializer = EventSerializer(event)
+        headers = self.get_success_headers(output_serializer.data)
+        return Response(
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def perform_create(self, serializer):
+        """
+        Create event and set created_by/updated_by to current user.
+
+        The serializer handles family lookup via family_public_id.
+        """
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        """
+        Update event and set updated_by to current user.
+        """
+        serializer.save(updated_by=self.request.user)
+
+    def perform_destroy(self, instance):
+        """
+        Soft delete event by setting is_deleted=True and deleted_at.
+
+        Does NOT hard delete from database (BaseModel soft delete pattern).
+        """
+        instance.is_deleted = True
+        instance.deleted_at = timezone.now()
+        instance.save()
+
+
+class GroceryItemViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
+    """
+    ViewSet for GroceryItem CRUD operations.
+
+    Uses FamilyAccessMixin to automatically filter grocery items by family membership!
+
+    Endpoints:
+    - GET /api/v1/groceries/ - List grocery items (user's families only)
+    - POST /api/v1/groceries/ - Create grocery item
+    - GET /api/v1/groceries/{public_id}/ - Retrieve grocery item details
+    - PATCH /api/v1/groceries/{public_id}/ - Update grocery item
+    - PATCH /api/v1/groceries/{public_id}/toggle/ - Toggle purchased status
+    - DELETE /api/v1/groceries/{public_id}/ - Soft delete grocery item
+
+    CRITICAL: All URLs use public_id (UUID), NOT integer id!
+    """
+
+    queryset = GroceryItem.objects.all()  # Mixin filters this automatically!
+    lookup_field = "public_id"
+    lookup_url_kwarg = "public_id"
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        """
+        Return appropriate serializer based on action.
+
+        - create: GroceryCreateSerializer (with family_public_id)
+        - update/partial_update: GroceryUpdateSerializer (all optional)
+        - retrieve/list: GrocerySerializer (includes added_by)
+        """
+        if self.action == "create":
+            return GroceryCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return GroceryUpdateSerializer
+        else:
+            return GrocerySerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create grocery item and return full item data.
+
+        Override to return GrocerySerializer (with all fields) instead of
+        GroceryCreateSerializer (which only has input fields).
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Use GrocerySerializer to return full item data
+        item = serializer.instance
+        output_serializer = GrocerySerializer(item)
+        headers = self.get_success_headers(output_serializer.data)
+        return Response(
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def perform_create(self, serializer):
+        """
+        Create grocery item and set added_by to current user.
+
+        The serializer handles family lookup via family_public_id.
+        """
+        serializer.save(added_by=self.request.user)
+
+    def perform_destroy(self, instance):
+        """
+        Soft delete grocery item by setting is_deleted=True and deleted_at.
+
+        Does NOT hard delete from database (BaseModel soft delete pattern).
+        """
+        instance.is_deleted = True
+        instance.deleted_at = timezone.now()
+        instance.save()
+
+    @action(detail=True, methods=["patch"], url_path="toggle")
+    def toggle(self, request, public_id=None):
+        """
+        PATCH /api/v1/groceries/{public_id}/toggle/ - Toggle purchased status.
+
+        Toggles is_purchased between True and False.
+        """
+        item = self.get_object()
+
+        # Toggle is_purchased
+        item.is_purchased = not item.is_purchased
+        item.save()
+
+        # Return updated item
+        serializer = self.get_serializer(item)
         return Response(serializer.data)
