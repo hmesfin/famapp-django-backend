@@ -313,14 +313,49 @@ REST_FRAMEWORK = {
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
 
-# By Default swagger ui is available only to admin user(s). You can change permission classes to change that
+# drf-spectacular settings for API documentation
 # See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Django Backend API",
-    "DESCRIPTION": "Documentation of API endpoints of Django Backend",
+    "TITLE": "FamApp API",
+    "DESCRIPTION": """
+        FamApp Backend REST API - Family collaboration platform.
+
+        Features:
+        - Family management with role-based permissions
+        - Todo lists for family tasks
+        - Shared calendar/schedule events
+        - Grocery shopping lists
+        - Pet management and activity tracking
+
+        All endpoints use JWT authentication.
+        All resource URLs use UUID (public_id), not integer IDs.
+    """,
     "VERSION": "1.0.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Allow schema viewing without authentication (Swagger/ReDoc still require auth for actual API calls)
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     "SCHEMA_PATH_PREFIX": "/api/",
+    # Security scheme for JWT
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    },
+    "SECURITY": [{"jwtAuth": []}],
+    # Component settings
+    "COMPONENT_SPLIT_REQUEST": True,
+    # Tag settings
+    "TAGS": [
+        {"name": "Families", "description": "Family management and member operations"},
+        {"name": "Todos", "description": "Family todo list management"},
+        {"name": "Schedule Events", "description": "Family calendar and schedule management"},
+        {"name": "Grocery Items", "description": "Shared grocery shopping lists"},
+        {"name": "Pets", "description": "Family pet management and activity tracking"},
+    ],
 }
 # django-rest-framework-simplejwt
 # -------------------------------------------------------------------------------

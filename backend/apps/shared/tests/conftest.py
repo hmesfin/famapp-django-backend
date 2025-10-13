@@ -68,3 +68,84 @@ def admin_user(db):
     return User.objects.create_superuser(
         email="admin@example.com", password="adminpass123"
     )
+
+
+# FamApp model fixtures
+@pytest.fixture
+def family(db, user):
+    """Create a test family"""
+    from apps.shared.models import Family
+    from apps.shared.models import FamilyMember
+
+    family = Family.objects.create(name="Test Family", created_by=user)
+    FamilyMember.objects.create(
+        family=family, user=user, role=FamilyMember.Role.ORGANIZER
+    )
+    return family
+
+
+@pytest.fixture
+def todo(db, user, family):
+    """Create a test todo"""
+    from apps.shared.models import Todo
+
+    return Todo.objects.create(
+        family=family,
+        title="Test Todo",
+        description="Test description",
+        assigned_to=user,
+        created_by=user,
+    )
+
+
+@pytest.fixture
+def schedule_event(db, user, family):
+    """Create a test schedule event"""
+    from datetime import datetime
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.shared.models import ScheduleEvent
+
+    start_time = timezone.now() + timedelta(days=1)
+    end_time = start_time + timedelta(hours=2)
+
+    return ScheduleEvent.objects.create(
+        family=family,
+        title="Test Event",
+        description="Test event description",
+        start_time=start_time,
+        end_time=end_time,
+        location="Test Location",
+        created_by=user,
+    )
+
+
+@pytest.fixture
+def grocery_item(db, user, family):
+    """Create a test grocery item"""
+    from apps.shared.models import GroceryItem
+
+    return GroceryItem.objects.create(
+        family=family,
+        name="Test Grocery",
+        quantity=2,
+        unit="pieces",
+        created_by=user,
+    )
+
+
+@pytest.fixture
+def pet(db, user, family):
+    """Create a test pet"""
+    from apps.shared.models import Pet
+
+    return Pet.objects.create(
+        family=family,
+        name="Fluffy",
+        species="dog",
+        breed="Golden Retriever",
+        age=4,
+        created_by=user,
+    )
