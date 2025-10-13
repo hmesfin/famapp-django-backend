@@ -3,8 +3,8 @@ Shared validators for the entire application.
 DRY validation logic that can be reused across models and serializers.
 """
 
-from datetime import date, datetime
-from typing import Optional
+from datetime import date
+
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -13,13 +13,13 @@ class DateValidators:
     """Date-related validation utilities"""
 
     @staticmethod
-    def validate_date_range(start_date: date, end_date: Optional[date]) -> None:
+    def validate_date_range(start_date: date, end_date: date | None) -> None:
         """Validate that start_date is before end_date"""
         if end_date and start_date > end_date:
             raise ValidationError(
                 {
-                    "end_date": "🤔 Unless you have a time machine, projects can't end before they start! Move that end date forward, friend!"
-                }
+                    "end_date": "🤔 Unless you have a time machine, projects can't end before they start! Move that end date forward, friend!",
+                },
             )
 
     @staticmethod
@@ -28,8 +28,8 @@ class DateValidators:
         if date_value < timezone.now().date():
             raise ValidationError(
                 {
-                    field_name: f"{field_name.replace('_', ' ').title()} cannot be in the past."
-                }
+                    field_name: f"{field_name.replace('_', ' ').title()} cannot be in the past.",
+                },
             )
 
     @staticmethod
@@ -38,8 +38,8 @@ class DateValidators:
         if status == "active" and start_date < timezone.now().date():
             raise ValidationError(
                 {
-                    "start_date": '⏰ Whoa there, time traveler! Active projects can\'t start yesterday. Either move that date forward or switch to "Planning" status while you build your DeLorean!'
-                }
+                    "start_date": '⏰ Whoa there, time traveler! Active projects can\'t start yesterday. Either move that date forward or switch to "Planning" status while you build your DeLorean!',
+                },
             )
 
 
@@ -79,13 +79,13 @@ class StatusValidators:
             raise ValidationError({"status": message})
 
     @staticmethod
-    def validate_completed_has_end_date(status: str, end_date: Optional[date]) -> None:
+    def validate_completed_has_end_date(status: str, end_date: date | None) -> None:
         """Validate that completed projects have an end date"""
         if status == "completed" and not end_date:
             raise ValidationError(
                 {
-                    "end_date": "🎯 Hold up! You marked this as completed but didn't say when! Even miracles have end dates. Pick one!"
-                }
+                    "end_date": "🎯 Hold up! You marked this as completed but didn't say when! Even miracles have end dates. Pick one!",
+                },
             )
 
 
@@ -120,6 +120,6 @@ class UniqueValidators:
 
             raise ValidationError(
                 {
-                    "name": f'🎬 Déjà vu! You already have a project called "{name}"! How about {suggestion}? Or, you know, something actually original? 😉'
-                }
+                    "name": f'🎬 Déjà vu! You already have a project called "{name}"! How about {suggestion}? Or, you know, something actually original? 😉',
+                },
             )
