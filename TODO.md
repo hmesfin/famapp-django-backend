@@ -1063,3 +1063,187 @@ famapp-backend/
 
 _"In cookiecutter-django we trust, all others must bring tests!"_ 🍪
 _"Ham Dog & TC: Making Django REST APIs with TDD discipline!"_ 🚀
+
+---
+
+## Enhancements & Future Improvements
+
+This section documents post-MVP enhancements to improve UX, security, and mobile-first experience.
+
+### Enhancement 1: OTP-Based Email Verification (Mobile-First) 🔐
+
+**Current State**: Email verification uses magic links (click-to-verify URLs)
+**Problem**: Poor UX on mobile apps (forces app switching, email client dependency, link expiration issues)
+**Solution**: Replace with OTP (One-Time Password) verification codes
+
+**Why OTP for Mobile Apps?**
+- ✅ **Better UX**: User stays in-app, no app switching required
+- ✅ **Higher conversion**: Simple 6-digit code entry (familiar pattern)
+- ✅ **Security**: Time-limited codes (5-10 min), one-time use, rate limiting
+- ✅ **Mobile-first**: Native numeric keyboard, paste support, auto-fill
+- ✅ **Accessibility**: Screen reader friendly, easier for users with dexterity issues
+
+**Implementation Strategy**:
+1. Store OTP codes in Redis with TTL (time-to-live)
+2. Generate 6-digit random codes
+3. Send via email (existing SendGrid integration)
+4. API endpoints for verification and resend
+5. Rate limiting to prevent abuse
+6. Optional: Hybrid approach (OTP primary, magic link fallback)
+
+---
+
+### TDD Plan: OTP Email Verification
+
+**Target**: Replace magic link email verification with OTP codes for mobile-first experience
+
+#### Phase A: OTP Model & Storage (Redis)
+
+**Note**: OTP codes will be stored in Redis (not database) with automatic expiration via TTL.
+
+- [ ] **TEST**: OTP generation and storage
+  - [ ] Write test: Generate 6-digit OTP code (random, numeric)
+  - [ ] Implement: `apps/users/otp.py` - `generate_otp()` function
+  - [ ] Write test: OTP code length is exactly 6 digits
+  - [ ] Implement: Length validation in generator
+  - [ ] Write test: Store OTP in Redis with user email as key
+  - [ ] Implement: Redis cache backend integration (already configured in cookiecutter-django)
+  - [ ] Write test: OTP expires after 10 minutes (TTL)
+  - [ ] Implement: Redis key expiration using cache.set(key, value, timeout=600)
+  - [ ] Write test: Retrieve OTP from Redis by email
+  - [ ] Implement: cache.get() for OTP retrieval
+  - [ ] Write test: OTP is deleted from Redis after retrieval (one-time use)
+  - [ ] Implement: cache.delete() after successful verification
+
+#### Phase B: OTP Email Sending
+
+- [ ] **TEST**: OTP email delivery
+  - [ ] Write test: Send OTP email with 6-digit code
+  - [ ] Implement: `apps/users/api/auth_utils.py` - `send_otp_email(user)` function
+  - [ ] Write test: Email subject is "FamApp - Your Verification Code"
+  - [ ] Implement: Email template with clear subject line
+  - [ ] Write test: Email body includes OTP code prominently
+  - [ ] Implement: HTML template with large, readable OTP code
+  - [ ] Write test: Email includes expiration time (10 minutes)
+  - [ ] Implement: Template context with expiration time
+  - [ ] Write test: Email includes "Didn't request this?" security notice
+  - [ ] Implement: Security notice in template
+  - [ ] Write test: Email sending logs success/failure
+  - [ ] Implement: Logging in send_otp_email()
+
+#### Phase C: OTP Verification Endpoint
+
+- [ ] **TEST**: POST /api/auth/verify-otp/
+  - [ ] Write test: Verify OTP with correct code marks user as verified
+  - [ ] Implement: `apps/users/api/auth_views.py` - VerifyOTPView
+  - [ ] Write test: Returns 200 with JWT tokens on success
+  - [ ] Implement: Generate JWT tokens after verification
+  - [ ] Write test: Returns 400 with "Invalid OTP" if code wrong
+  - [ ] Implement: OTP validation logic
+  - [ ] Write test: Returns 400 with "OTP expired" if code expired
+  - [ ] Implement: Check Redis key existence (expired keys return None)
+  - [ ] Write test: Returns 400 with "OTP not found" if no OTP for email
+  - [ ] Implement: Handle missing OTP codes
+  - [ ] Write test: OTP is deleted from Redis after successful verification
+  - [ ] Implement: cache.delete() after verification
+  - [ ] Write test: Same OTP cannot be used twice
+  - [ ] Implement: One-time use enforcement
+
+#### Phase D: OTP Resend Endpoint
+
+- [ ] **TEST**: POST /api/auth/resend-otp/
+  - [ ] Write test: Resend OTP generates new code
+  - [ ] Implement: `apps/users/api/auth_views.py` - ResendOTPView
+  - [ ] Write test: Returns 200 with "OTP sent" message
+  - [ ] Implement: Generate and send new OTP
+  - [ ] Write test: Returns 429 if resend requested < 60 seconds ago
+  - [ ] Implement: Rate limiting using Redis (track last_sent timestamp)
+  - [ ] Write test: Old OTP is invalidated when new OTP sent
+  - [ ] Implement: cache.delete() old key, cache.set() new key
+  - [ ] Write test: Returns 404 if user not found
+  - [ ] Implement: User existence validation
+  - [ ] Write test: Returns 400 if user already verified
+  - [ ] Implement: Check user.email_verified before sending
+
+#### Phase E: Registration Flow Update
+
+- [ ] **TEST**: POST /api/auth/register/ integration with OTP
+  - [ ] Write test: Registration sends OTP email (not verification link)
+  - [ ] Implement: Update CustomRegisterSerializer to call send_otp_email()
+  - [ ] Write test: Registration returns 201 with "Check email for OTP" message
+  - [ ] Implement: Response message update
+  - [ ] Write test: User cannot login until OTP verified
+  - [ ] Verify: Existing email_verified check in login (already implemented)
+  - [ ] Write test: Registration includes email in response (for OTP verification flow)
+  - [ ] Implement: Return email in registration response
+
+#### Phase F: Login Flow Update
+
+- [ ] **TEST**: POST /api/auth/login/ integration with OTP
+  - [ ] Write test: Login with unverified email sends new OTP
+  - [ ] Verify: Existing logic in CustomTokenObtainPairSerializer.validate()
+  - [ ] Write test: Login error response includes "requires_email_verification: true"
+  - [ ] Verify: Already implemented in current code
+  - [ ] Write test: Mobile app can call /verify-otp/ after login failure
+  - [ ] Implement: E2E test for login → verify-otp → login flow
+
+#### Phase G: Rate Limiting & Security
+
+- [ ] **TEST**: OTP rate limiting
+  - [ ] Write test: Max 3 OTP verification attempts per 5 minutes
+  - [ ] Implement: Redis-based attempt counter (key: f"otp_attempts:{email}", TTL: 300)
+  - [ ] Write test: Returns 429 "Too many attempts" after limit exceeded
+  - [ ] Implement: Increment counter on each attempt, check before validation
+  - [ ] Write test: Counter resets after successful verification
+  - [ ] Implement: cache.delete() attempts counter on success
+  - [ ] Write test: Max 5 OTP resend requests per hour
+  - [ ] Implement: Separate rate limit for resend endpoint
+  - [ ] Write test: IP-based rate limiting (prevent bulk attacks)
+  - [ ] Implement: Use django-ratelimit or custom Redis rate limiter
+
+#### Phase H: Logging & Monitoring
+
+- [ ] **TEST**: OTP security logging
+  - [ ] Write test: Log OTP generation (email, timestamp, expiration)
+  - [ ] Implement: Logging in generate_otp()
+  - [ ] Write test: Log OTP verification attempts (success/failure)
+  - [ ] Implement: Logging in verify-otp endpoint
+  - [ ] Write test: Log rate limit violations
+  - [ ] Implement: Logging in rate limiter
+  - [ ] Write test: Alert on suspicious activity (10+ failed attempts)
+  - [ ] Implement: Celery task for security alerts
+
+#### Phase I: Documentation & E2E Tests
+
+- [ ] **TEST**: OTP flow documentation
+  - [ ] Write test: OpenAPI schema includes /verify-otp/ endpoint
+  - [ ] Implement: drf-spectacular decorators on VerifyOTPView
+  - [ ] Write test: OpenAPI schema includes /resend-otp/ endpoint
+  - [ ] Implement: drf-spectacular decorators on ResendOTPView
+  - [ ] Write test: E2E test - signup → receive OTP → verify → login
+  - [ ] Implement: E2E test in apps/shared/tests/test_e2e_flows.py
+  - [ ] Write test: E2E test - login with unverified email → resend OTP → verify → login
+  - [ ] Implement: E2E test for resend flow
+  - [ ] Update README: Document OTP verification flow
+  - [ ] Update API docs: Add OTP endpoint examples
+
+#### Phase J: Cleanup Old Magic Link Code (OPTIONAL)
+
+- [ ] **REFACTOR**: Remove magic link verification
+  - [ ] Remove: `send_verification_email()` function (keep as fallback?)
+  - [ ] Remove: `/api/auth/verify-email?token=...` endpoint (keep as fallback?)
+  - [ ] Update: User model docstrings (mention OTP verification)
+  - [ ] Update: Tests that reference magic links
+  - [ ] Decision: Keep magic link as fallback option? (Hybrid approach)
+
+**Enhancement 1 Summary:**
+- 🎯 **Goal**: Replace magic links with OTP codes for better mobile UX
+- 📧 **Storage**: Redis with 10-minute TTL (automatic expiration)
+- 🔐 **Security**: Rate limiting, one-time use, attempt counters
+- 📱 **Mobile-First**: 6-digit codes, numeric keyboard, familiar pattern
+- 🧪 **TDD Approach**: 50+ tests covering generation, storage, verification, rate limiting
+- 🚀 **Deliverables**: 2 new endpoints (/verify-otp/, /resend-otp/), updated registration flow
+- ⏱️ **Estimated Time**: 4-6 hours (with comprehensive testing)
+- 🌐 **Hybrid Option**: Keep magic links as fallback (low priority users)
+
+---
