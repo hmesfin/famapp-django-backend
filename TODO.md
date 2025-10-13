@@ -1251,6 +1251,89 @@ This section documents post-MVP enhancements to improve UX, security, and mobile
 
 **Phases C, D, E Complete - OTP System Production-Ready!** 🎉
 
+#### Manual Testing Phase: Postman API Testing 🧪
+
+**Objective**: Validate OTP endpoints via Postman to ensure real-world API functionality
+
+**Test Scenarios**:
+1. **Registration Flow**:
+   - POST /api/auth/register/ → Check OTP email in Mailpit
+   - Verify response includes email field
+   - Confirm OTP stored in Redis (check logs)
+
+2. **OTP Verification Flow**:
+   - POST /api/auth/verify-otp/ with correct OTP → Verify JWT tokens returned
+   - POST /api/auth/verify-otp/ with wrong OTP → Verify 400 error
+   - POST /api/auth/verify-otp/ with expired OTP → Verify 400 error
+   - POST /api/auth/verify-otp/ with same OTP twice → Verify 400 error (one-time use)
+
+3. **OTP Resend Flow**:
+   - POST /api/auth/resend-otp/ → Verify new OTP sent
+   - POST /api/auth/resend-otp/ (immediate retry) → Verify 429 rate limit
+   - Wait 60 seconds → POST /api/auth/resend-otp/ → Verify success
+
+4. **Login Flow**:
+   - POST /api/auth/login/ with unverified email → Verify 400 error
+   - POST /api/auth/verify-otp/ → Verify email
+   - POST /api/auth/login/ with verified email → Verify JWT tokens returned
+
+5. **Edge Cases**:
+   - POST /api/auth/verify-otp/ with non-existent email → Verify 400/404 error
+   - POST /api/auth/resend-otp/ for already verified user → Verify 400 error
+
+**Testing Environment**:
+- Backend: http://localhost:8000
+- Mailpit UI: http://localhost:8025 (check OTP emails)
+- Redis: Available via Django cache (logs will show OTP storage)
+
+**Postman Request Examples**:
+
+```json
+// 1. Register new user
+POST http://localhost:8000/api/auth/register/
+Content-Type: application/json
+{
+  "email": "test@example.com",
+  "password": "SecurePass123!",
+  "password_confirm": "SecurePass123!",
+  "first_name": "Test",
+  "last_name": "User"
+}
+
+// 2. Verify OTP
+POST http://localhost:8000/api/auth/verify-otp/
+Content-Type: application/json
+{
+  "email": "test@example.com",
+  "otp": "123456"
+}
+
+// 3. Resend OTP
+POST http://localhost:8000/api/auth/resend-otp/
+Content-Type: application/json
+{
+  "email": "test@example.com"
+}
+
+// 4. Login (after verification)
+POST http://localhost:8000/api/auth/login/
+Content-Type: application/json
+{
+  "email": "test@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Expected Responses**:
+- Registration: `201 Created` with `{"email": "test@example.com", "message": "..."}`
+- Verify OTP: `200 OK` with `{"access": "...", "refresh": "...", "user": {...}}`
+- Resend OTP: `200 OK` with `{"message": "OTP sent successfully", "email": "..."}`
+- Login: `200 OK` with `{"access": "...", "refresh": "...", "user": {...}}`
+
+**Status**: 🔄 Ready for manual testing
+
+---
+
 #### Phase F: Login Flow Update
 
 - [ ] **TEST**: POST /api/auth/login/ integration with OTP
