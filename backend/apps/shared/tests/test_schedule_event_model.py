@@ -19,7 +19,8 @@ class TestScheduleEventModel:
 
     def test_create_schedule_event_with_required_fields(self):
         """Test: Create schedule event with title, start_time, end_time, and family"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -28,7 +29,10 @@ class TestScheduleEventModel:
 
         # Act
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Assert
@@ -41,7 +45,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_title_is_required(self):
         """Test: ScheduleEvent title is required"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -56,7 +61,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_title_max_length_200(self):
         """Test: ScheduleEvent title max length is 200 characters"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -67,7 +73,10 @@ class TestScheduleEventModel:
         # Act & Assert
         with pytest.raises(Exception):  # ValidationError or DataError
             ScheduleEvent.objects.create(
-                title=long_title, family=family, start_time=start_time, end_time=end_time
+                title=long_title,
+                family=family,
+                start_time=start_time,
+                end_time=end_time,
             )
 
     def test_schedule_event_family_is_required(self):
@@ -81,12 +90,16 @@ class TestScheduleEventModel:
         # Act & Assert
         with pytest.raises(IntegrityError):
             ScheduleEvent.objects.create(
-                title="Doctor Appointment", family=None, start_time=start_time, end_time=end_time
+                title="Doctor Appointment",
+                family=None,
+                start_time=start_time,
+                end_time=end_time,
             )
 
     def test_schedule_event_start_time_is_required(self):
         """Test: ScheduleEvent start_time is required"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -95,12 +108,16 @@ class TestScheduleEventModel:
         # Act & Assert
         with pytest.raises(IntegrityError):
             ScheduleEvent.objects.create(
-                title="Doctor Appointment", family=family, start_time=None, end_time=end_time
+                title="Doctor Appointment",
+                family=family,
+                start_time=None,
+                end_time=end_time,
             )
 
     def test_schedule_event_end_time_is_required(self):
         """Test: ScheduleEvent end_time is required"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -109,12 +126,16 @@ class TestScheduleEventModel:
         # Act & Assert
         with pytest.raises(IntegrityError):
             ScheduleEvent.objects.create(
-                title="Doctor Appointment", family=family, start_time=start_time, end_time=None
+                title="Doctor Appointment",
+                family=family,
+                start_time=start_time,
+                end_time=None,
             )
 
     def test_schedule_event_description_is_optional(self):
         """Test: ScheduleEvent description is optional"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -123,7 +144,10 @@ class TestScheduleEventModel:
 
         # Act
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Assert
@@ -131,7 +155,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_with_description(self):
         """Test: ScheduleEvent can have description"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -163,7 +188,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_default_type_is_other(self):
         """Test: Default event_type is OTHER"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -172,7 +198,10 @@ class TestScheduleEventModel:
 
         # Act
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Assert
@@ -180,7 +209,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_type_can_be_appointment(self):
         """Test: Can create event with APPOINTMENT type"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -201,7 +231,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_type_can_be_meeting(self):
         """Test: Can create event with MEETING type"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -222,7 +253,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_type_can_be_reminder(self):
         """Test: Can create event with REMINDER type"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -243,7 +275,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_location_is_optional(self):
         """Test: ScheduleEvent location is optional"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -252,7 +285,10 @@ class TestScheduleEventModel:
 
         # Act
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Assert
@@ -260,7 +296,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_with_location(self):
         """Test: ScheduleEvent can have location"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -281,7 +318,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_location_max_length_255(self):
         """Test: ScheduleEvent location max length is 255 characters"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -301,7 +339,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_assigned_to_is_optional(self):
         """Test: ScheduleEvent assigned_to is optional"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -310,7 +349,10 @@ class TestScheduleEventModel:
 
         # Act
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Assert
@@ -318,7 +360,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_with_assigned_to(self, user):
         """Test: ScheduleEvent can be assigned to a user"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -339,7 +382,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_assigned_to_uses_set_null_on_delete(self, user):
         """Test: assigned_to uses SET_NULL when user is deleted"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -364,7 +408,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_has_timestamps(self):
         """Test: ScheduleEvent has created_at and updated_at (BaseModel)"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -373,7 +418,10 @@ class TestScheduleEventModel:
 
         # Act
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Assert
@@ -382,7 +430,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_has_audit_fields(self, user):
         """Test: ScheduleEvent has created_by and updated_by (BaseModel)"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -405,7 +454,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_has_soft_delete_fields(self):
         """Test: ScheduleEvent has is_deleted, deleted_at, deleted_by (BaseModel)"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -414,7 +464,10 @@ class TestScheduleEventModel:
 
         # Act
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Assert
@@ -425,14 +478,18 @@ class TestScheduleEventModel:
 
     def test_schedule_event_can_be_soft_deleted(self, user):
         """Test: ScheduleEvent can be soft deleted"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=1)
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Act
@@ -446,14 +503,18 @@ class TestScheduleEventModel:
 
     def test_schedule_event_str_representation(self):
         """Test: ScheduleEvent __str__ returns meaningful representation"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=1)
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         # Act
@@ -464,14 +525,18 @@ class TestScheduleEventModel:
 
     def test_delete_family_cascades_to_schedule_events(self):
         """Test: Deleting family hard-deletes all related ScheduleEvents"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=1)
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
         event_id = event.id
 
@@ -484,14 +549,18 @@ class TestScheduleEventModel:
 
     def test_family_has_reverse_relationship_to_schedule_events(self):
         """Test: Family has reverse relationship to schedule events"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=1)
         ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
         ScheduleEvent.objects.create(
             title="Dentist Appointment",
@@ -508,7 +577,8 @@ class TestScheduleEventModel:
 
     def test_user_has_reverse_relationship_to_assigned_schedule_events(self, user):
         """Test: User has reverse relationship to assigned schedule events"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -537,14 +607,18 @@ class TestScheduleEventModel:
 
     def test_schedule_event_event_type_can_be_updated(self):
         """Test: ScheduleEvent event_type can be updated"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=1)
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
         assert event.event_type == ScheduleEvent.EventType.OTHER
 
@@ -558,14 +632,18 @@ class TestScheduleEventModel:
 
     def test_schedule_event_times_can_be_updated(self):
         """Test: ScheduleEvent start_time and end_time can be updated"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=1)
         event = ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
         original_start = event.start_time
         original_end = event.end_time
@@ -586,7 +664,8 @@ class TestScheduleEventModel:
 
     def test_multiple_schedule_events_per_family(self):
         """Test: Family can have multiple schedule events"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -595,7 +674,10 @@ class TestScheduleEventModel:
 
         # Act
         ScheduleEvent.objects.create(
-            title="Doctor Appointment", family=family, start_time=start_time, end_time=end_time
+            title="Doctor Appointment",
+            family=family,
+            start_time=start_time,
+            end_time=end_time,
         )
         ScheduleEvent.objects.create(
             title="Dentist Appointment",
@@ -615,7 +697,8 @@ class TestScheduleEventModel:
 
     def test_user_can_have_multiple_assigned_schedule_events(self, user):
         """Test: User can be assigned multiple schedule events"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -643,7 +726,8 @@ class TestScheduleEventModel:
 
     def test_schedule_event_with_all_fields(self, user):
         """Test: Create schedule event with all fields populated"""
-        from apps.shared.models import Family, ScheduleEvent
+        from apps.shared.models import Family
+        from apps.shared.models import ScheduleEvent
 
         # Arrange
         family = Family.objects.create(name="Smith Family")

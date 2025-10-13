@@ -18,7 +18,8 @@ class TestGroceryItemModel:
 
     def test_create_grocery_item_with_required_fields(self):
         """Test: Create grocery item with name and family"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -34,7 +35,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_name_is_required(self):
         """Test: GroceryItem name is required"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -45,7 +47,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_name_max_length_200(self):
         """Test: GroceryItem name max length is 200 characters"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -65,7 +68,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_quantity_default_is_one(self):
         """Test: Default quantity is 1"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -78,7 +82,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_with_custom_quantity(self):
         """Test: GroceryItem can have custom quantity"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -91,7 +96,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_unit_is_optional(self):
         """Test: GroceryItem unit is optional"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -104,7 +110,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_with_unit(self):
         """Test: GroceryItem can have unit"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -119,7 +126,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_unit_max_length_50(self):
         """Test: GroceryItem unit max length is 50 characters"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -145,7 +153,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_default_category_is_other(self):
         """Test: Default category is OTHER"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -158,7 +167,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_category_can_be_produce(self):
         """Test: Can create item with PRODUCE category"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -173,7 +183,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_category_can_be_dairy(self):
         """Test: Can create item with DAIRY category"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -188,7 +199,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_category_can_be_meat(self):
         """Test: Can create item with MEAT category"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -203,7 +215,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_category_can_be_bakery(self):
         """Test: Can create item with BAKERY category"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -218,7 +231,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_category_can_be_pantry(self):
         """Test: Can create item with PANTRY category"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -233,7 +247,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_category_can_be_frozen(self):
         """Test: Can create item with FROZEN category"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -248,7 +263,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_is_purchased_default_is_false(self):
         """Test: Default is_purchased is False"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -261,22 +277,22 @@ class TestGroceryItemModel:
 
     def test_grocery_item_can_be_marked_as_purchased(self):
         """Test: GroceryItem can be marked as purchased"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
 
         # Act
-        item = GroceryItem.objects.create(
-            name="Milk", family=family, is_purchased=True
-        )
+        item = GroceryItem.objects.create(name="Milk", family=family, is_purchased=True)
 
         # Assert
         assert item.is_purchased is True
 
     def test_grocery_item_added_by_is_optional(self):
         """Test: GroceryItem added_by is optional"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -289,7 +305,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_with_added_by(self, user):
         """Test: GroceryItem can have added_by user"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -302,7 +319,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_added_by_uses_set_null_on_delete(self, user):
         """Test: added_by uses SET_NULL when user is deleted"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -319,7 +337,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_has_timestamps(self):
         """Test: GroceryItem has created_at and updated_at (BaseModel)"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -333,15 +352,14 @@ class TestGroceryItemModel:
 
     def test_grocery_item_has_audit_fields(self, user):
         """Test: GroceryItem has created_by and updated_by (BaseModel)"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
 
         # Act
-        item = GroceryItem.objects.create(
-            name="Milk", family=family, created_by=user
-        )
+        item = GroceryItem.objects.create(name="Milk", family=family, created_by=user)
 
         # Assert
         assert hasattr(item, "created_by")
@@ -350,7 +368,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_has_soft_delete_fields(self):
         """Test: GroceryItem has is_deleted, deleted_at, deleted_by (BaseModel)"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -366,7 +385,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_can_be_soft_deleted(self, user):
         """Test: GroceryItem can be soft deleted"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -383,7 +403,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_str_representation(self):
         """Test: GroceryItem __str__ returns meaningful representation"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -397,7 +418,8 @@ class TestGroceryItemModel:
 
     def test_delete_family_cascades_to_grocery_items(self):
         """Test: Deleting family hard-deletes all related GroceryItems"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -413,7 +435,8 @@ class TestGroceryItemModel:
 
     def test_family_has_reverse_relationship_to_grocery_items(self):
         """Test: Family has reverse relationship to grocery items"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -428,7 +451,8 @@ class TestGroceryItemModel:
 
     def test_user_has_reverse_relationship_to_added_grocery_items(self, user):
         """Test: User has reverse relationship to added grocery items"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -443,7 +467,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_category_can_be_updated(self):
         """Test: GroceryItem category can be updated"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -460,7 +485,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_is_purchased_can_be_toggled(self):
         """Test: GroceryItem is_purchased can be toggled"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -485,7 +511,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_quantity_can_be_updated(self):
         """Test: GroceryItem quantity can be updated"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -502,7 +529,8 @@ class TestGroceryItemModel:
 
     def test_multiple_grocery_items_per_family(self):
         """Test: Family can have multiple grocery items"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -517,7 +545,8 @@ class TestGroceryItemModel:
 
     def test_user_can_add_multiple_grocery_items(self, user):
         """Test: User can add multiple grocery items"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -531,7 +560,8 @@ class TestGroceryItemModel:
 
     def test_grocery_item_with_all_fields(self, user):
         """Test: Create grocery item with all fields populated"""
-        from apps.shared.models import Family, GroceryItem
+        from apps.shared.models import Family
+        from apps.shared.models import GroceryItem
 
         # Arrange
         family = Family.objects.create(name="Smith Family")

@@ -18,7 +18,8 @@ class TestPetModel:
 
     def test_create_pet_with_required_fields(self):
         """Test: Create pet with name and family"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -34,7 +35,8 @@ class TestPetModel:
 
     def test_pet_name_is_required(self):
         """Test: Pet name is required"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -45,7 +47,8 @@ class TestPetModel:
 
     def test_pet_name_max_length_100(self):
         """Test: Pet name max length is 100 characters"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -77,7 +80,8 @@ class TestPetModel:
 
     def test_pet_default_species_is_other(self):
         """Test: Default species is OTHER"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -90,7 +94,8 @@ class TestPetModel:
 
     def test_pet_species_can_be_dog(self):
         """Test: Can create pet with DOG species"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -103,20 +108,24 @@ class TestPetModel:
 
     def test_pet_species_can_be_cat(self):
         """Test: Can create pet with CAT species"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
 
         # Act
-        pet = Pet.objects.create(name="Whiskers", family=family, species=Pet.Species.CAT)
+        pet = Pet.objects.create(
+            name="Whiskers", family=family, species=Pet.Species.CAT
+        )
 
         # Assert
         assert pet.species == Pet.Species.CAT
 
     def test_pet_species_can_be_bird(self):
         """Test: Can create pet with BIRD species"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -129,7 +138,8 @@ class TestPetModel:
 
     def test_pet_species_can_be_fish(self):
         """Test: Can create pet with FISH species"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -142,7 +152,8 @@ class TestPetModel:
 
     def test_pet_breed_is_optional(self):
         """Test: Pet breed is optional"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -155,14 +166,18 @@ class TestPetModel:
 
     def test_pet_with_breed(self):
         """Test: Pet can have breed"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
 
         # Act
         pet = Pet.objects.create(
-            name="Buddy", family=family, species=Pet.Species.DOG, breed="Golden Retriever"
+            name="Buddy",
+            family=family,
+            species=Pet.Species.DOG,
+            breed="Golden Retriever",
         )
 
         # Assert
@@ -170,7 +185,8 @@ class TestPetModel:
 
     def test_pet_breed_max_length_100(self):
         """Test: Pet breed max length is 100 characters"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -182,7 +198,8 @@ class TestPetModel:
 
     def test_pet_age_is_optional(self):
         """Test: Pet age is optional"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -195,7 +212,8 @@ class TestPetModel:
 
     def test_pet_with_age(self):
         """Test: Pet can have age"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -208,7 +226,8 @@ class TestPetModel:
 
     def test_pet_notes_is_optional(self):
         """Test: Pet notes is optional"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -221,7 +240,8 @@ class TestPetModel:
 
     def test_pet_with_notes(self):
         """Test: Pet can have notes"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -236,7 +256,8 @@ class TestPetModel:
 
     def test_pet_has_timestamps(self):
         """Test: Pet has created_at and updated_at (BaseModel)"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -250,7 +271,8 @@ class TestPetModel:
 
     def test_pet_has_audit_fields(self, user):
         """Test: Pet has created_by and updated_by (BaseModel)"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -265,7 +287,8 @@ class TestPetModel:
 
     def test_pet_has_soft_delete_fields(self):
         """Test: Pet has is_deleted, deleted_at, deleted_by (BaseModel)"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -281,7 +304,8 @@ class TestPetModel:
 
     def test_pet_can_be_soft_deleted(self, user):
         """Test: Pet can be soft deleted"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -298,7 +322,8 @@ class TestPetModel:
 
     def test_pet_str_representation(self):
         """Test: Pet __str__ returns meaningful representation"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -312,7 +337,8 @@ class TestPetModel:
 
     def test_delete_family_cascades_to_pets(self):
         """Test: Deleting family hard-deletes all related Pets"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -328,7 +354,8 @@ class TestPetModel:
 
     def test_family_has_reverse_relationship_to_pets(self):
         """Test: Family has reverse relationship to pets"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -343,7 +370,8 @@ class TestPetModel:
 
     def test_pet_species_can_be_updated(self):
         """Test: Pet species can be updated"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -360,7 +388,8 @@ class TestPetModel:
 
     def test_pet_age_can_be_updated(self):
         """Test: Pet age can be updated"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -377,7 +406,8 @@ class TestPetModel:
 
     def test_multiple_pets_per_family(self):
         """Test: Family can have multiple pets"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -392,7 +422,8 @@ class TestPetModel:
 
     def test_pet_with_all_fields(self, user):
         """Test: Create pet with all fields populated"""
-        from apps.shared.models import Family, Pet
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
 
         # Arrange
         family = Family.objects.create(name="Smith Family")

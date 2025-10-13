@@ -10,15 +10,16 @@ Following the Ten Commandments:
 
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .serializers import UserCreateSerializer
 from .auth_utils import send_verification_email
+from .serializers import UserCreateSerializer
 
 User = get_user_model()
 
@@ -67,7 +68,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "id": user.pk,
             "public_id": str(user.public_id),
             "email": user.email,
-            "phone_number": user.phone_number if hasattr(user, "phone_number") else None,
+            "phone_number": user.phone_number
+            if hasattr(user, "phone_number")
+            else None,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "is_active": user.is_active,
@@ -128,7 +131,9 @@ def register(request):
             "id": user.pk,
             "public_id": str(user.public_id),
             "email": user.email,
-            "phone_number": user.phone_number if hasattr(user, "phone_number") else None,
+            "phone_number": user.phone_number
+            if hasattr(user, "phone_number")
+            else None,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "is_active": user.is_active,
@@ -356,7 +361,8 @@ def verify_email(request):
         "token": "signed_verification_token"
     }
     """
-    from django.core.signing import BadSignature, Signer
+    from django.core.signing import BadSignature
+    from django.core.signing import Signer
 
     token = request.data.get("token")
     if not token:

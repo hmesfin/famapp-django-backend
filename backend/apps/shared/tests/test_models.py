@@ -10,7 +10,8 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 # Import concrete test models from conftest
-from .conftest import TestBaseModelConcrete, TestSimpleBaseModelConcrete
+from .conftest import TestBaseModelConcrete
+from .conftest import TestSimpleBaseModelConcrete
 
 User = get_user_model()
 

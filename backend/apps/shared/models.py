@@ -8,6 +8,7 @@ Following the Ten Commandments:
 """
 
 import uuid
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
@@ -340,9 +341,7 @@ class ScheduleEvent(BaseModel):
     )
     start_time = models.DateTimeField(help_text="Event start time")
     end_time = models.DateTimeField(help_text="Event end time")
-    location = models.CharField(
-        max_length=255, blank=True, help_text="Event location"
-    )
+    location = models.CharField(max_length=255, blank=True, help_text="Event location")
     assigned_to = models.ForeignKey(
         "users.User",
         on_delete=models.SET_NULL,

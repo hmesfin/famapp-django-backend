@@ -14,7 +14,8 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
 
 User = get_user_model()
 
@@ -161,9 +162,10 @@ class TestFamilySerializer:
 
     def test_public_id_is_read_only(self):
         """Test that public_id cannot be set via serializer."""
+        import uuid
+
         from apps.shared.serializers import FamilySerializer
 
-        import uuid
         fake_uuid = uuid.uuid4()
 
         serializer = FamilySerializer(data={"name": "Test", "public_id": fake_uuid})
@@ -230,7 +232,7 @@ class TestFamilyDetailSerializer:
             email="test@example.com",
             password="testpass123",
             first_name="Test",
-            last_name="User"
+            last_name="User",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(

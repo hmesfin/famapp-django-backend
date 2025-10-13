@@ -7,12 +7,14 @@ Tests for IsFamilyMember and IsFamilyAdmin permission classes.
 Ham Dog & TC building bulletproof authorization! 🔒
 """
 
+from unittest.mock import Mock
+
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory
-from unittest.mock import Mock
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
 
 User = get_user_model()
 
@@ -82,8 +84,9 @@ class TestIsFamilyMemberPermission:
 
     def test_denies_access_if_family_not_found(self):
         """Test that permission returns False if family doesn't exist."""
-        from apps.shared.permissions import IsFamilyMember
         import uuid
+
+        from apps.shared.permissions import IsFamilyMember
 
         user = User.objects.create_user(
             email="test@example.com", password="testpass123"

@@ -7,7 +7,8 @@ from django.contrib.auth import get_user_model
 from django.db import connection
 from django.db.models import CharField
 
-from apps.shared.models import BaseModel, SimpleBaseModel
+from apps.shared.models import BaseModel
+from apps.shared.models import SimpleBaseModel
 
 User = get_user_model()
 

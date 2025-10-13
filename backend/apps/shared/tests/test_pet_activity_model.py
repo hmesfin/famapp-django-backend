@@ -19,7 +19,9 @@ class TestPetActivityModel:
 
     def test_create_pet_activity_with_required_fields(self):
         """Test: Create pet activity with activity_type, scheduled_time, and pet"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -42,7 +44,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_type_is_required(self):
         """Test: PetActivity activity_type is required"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -57,7 +61,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_scheduled_time_is_required(self):
         """Test: PetActivity scheduled_time is required"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -102,7 +108,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_type_feeding(self):
         """Test: Can create activity with FEEDING type"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -121,7 +129,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_type_walking(self):
         """Test: Can create activity with WALKING type"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -140,7 +150,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_type_grooming(self):
         """Test: Can create activity with GROOMING type"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -159,7 +171,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_type_vet_visit(self):
         """Test: Can create activity with VET_VISIT type"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -178,7 +192,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_type_medication(self):
         """Test: Can create activity with MEDICATION type"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -197,7 +213,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_type_playtime(self):
         """Test: Can create activity with PLAYTIME type"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -216,7 +234,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_type_other(self):
         """Test: Can create activity with OTHER type"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -235,7 +255,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_notes_is_optional(self):
         """Test: PetActivity notes is optional"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -254,7 +276,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_with_notes(self):
         """Test: PetActivity can have notes"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -274,7 +298,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_is_completed_default_is_false(self):
         """Test: Default is_completed is False"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -293,7 +319,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_can_be_marked_as_completed(self):
         """Test: PetActivity can be marked as completed"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -313,7 +341,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_completed_at_is_optional(self):
         """Test: PetActivity completed_at is optional"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -332,7 +362,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_with_completed_at(self):
         """Test: PetActivity can have completed_at"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -354,7 +386,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_completed_by_is_optional(self):
         """Test: PetActivity completed_by is optional"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -373,7 +407,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_with_completed_by(self, user):
         """Test: PetActivity can have completed_by user"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -393,7 +429,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_completed_by_uses_set_null_on_delete(self, user):
         """Test: completed_by uses SET_NULL when user is deleted"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -417,7 +455,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_has_timestamps(self):
         """Test: PetActivity has created_at and updated_at (BaseModel)"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -437,7 +477,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_has_audit_fields(self, user):
         """Test: PetActivity has created_by and updated_by (BaseModel)"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -459,7 +501,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_has_soft_delete_fields(self):
         """Test: PetActivity has is_deleted, deleted_at, deleted_by (BaseModel)"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -481,7 +525,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_can_be_soft_deleted(self, user):
         """Test: PetActivity can be soft deleted"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -504,7 +550,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_str_representation(self):
         """Test: PetActivity __str__ returns meaningful representation"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -524,7 +572,9 @@ class TestPetActivityModel:
 
     def test_delete_pet_cascades_to_activities(self):
         """Test: Deleting pet hard-deletes all related PetActivities"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -546,7 +596,9 @@ class TestPetActivityModel:
 
     def test_pet_has_reverse_relationship_to_activities(self):
         """Test: Pet has reverse relationship to activities"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -571,7 +623,9 @@ class TestPetActivityModel:
 
     def test_user_has_reverse_relationship_to_completed_activities(self, user):
         """Test: User has reverse relationship to completed activities"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -598,7 +652,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_is_completed_can_be_toggled(self):
         """Test: PetActivity is_completed can be toggled"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -621,7 +677,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_scheduled_time_can_be_updated(self):
         """Test: PetActivity scheduled_time can be updated"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -646,7 +704,9 @@ class TestPetActivityModel:
 
     def test_multiple_activities_per_pet(self):
         """Test: Pet can have multiple activities"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -675,7 +735,9 @@ class TestPetActivityModel:
 
     def test_pet_activity_with_all_fields(self, user):
         """Test: Create pet activity with all fields populated"""
-        from apps.shared.models import Family, Pet, PetActivity
+        from apps.shared.models import Family
+        from apps.shared.models import Pet
+        from apps.shared.models import PetActivity
 
         # Arrange
         family = Family.objects.create(name="Smith Family")

@@ -7,12 +7,14 @@ Tests for TodoCreateSerializer, TodoUpdateSerializer, TodoSerializer, TodoToggle
 Ham Dog & TC making sure todo serialization rocks! 🚀
 """
 
+from datetime import timedelta
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from datetime import timedelta
 
-from apps.shared.models import Family, Todo
+from apps.shared.models import Family
+from apps.shared.models import Todo
 
 User = get_user_model()
 
@@ -83,9 +85,7 @@ class TestTodoUpdateSerializer:
             email="test@example.com", password="testpass123"
         )
         family = Family.objects.create(name="Test Family", created_by=user)
-        todo = Todo.objects.create(
-            title="Old Title", family=family, created_by=user
-        )
+        todo = Todo.objects.create(title="Old Title", family=family, created_by=user)
 
         serializer = TodoUpdateSerializer(
             instance=todo,
@@ -111,9 +111,7 @@ class TestTodoSerializer:
             email="test@example.com", password="testpass123"
         )
         family = Family.objects.create(name="Test Family", created_by=user)
-        todo = Todo.objects.create(
-            title="Test Todo", family=family, created_by=user
-        )
+        todo = Todo.objects.create(title="Test Todo", family=family, created_by=user)
 
         serializer = TodoSerializer(instance=todo)
         data = serializer.data

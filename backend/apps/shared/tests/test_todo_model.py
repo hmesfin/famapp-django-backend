@@ -19,7 +19,8 @@ class TestTodoModel:
 
     def test_create_todo_with_required_fields(self, user):
         """Test: Create todo with title and family"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -35,7 +36,8 @@ class TestTodoModel:
 
     def test_todo_title_is_required(self):
         """Test: Todo title is required"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -46,7 +48,8 @@ class TestTodoModel:
 
     def test_todo_title_max_length_200(self):
         """Test: Todo title max length is 200 characters"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -66,7 +69,8 @@ class TestTodoModel:
 
     def test_todo_description_is_optional(self):
         """Test: Todo description is optional"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -79,7 +83,8 @@ class TestTodoModel:
 
     def test_todo_with_description(self):
         """Test: Todo can have description"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -106,7 +111,8 @@ class TestTodoModel:
 
     def test_todo_default_status_is_todo(self):
         """Test: Default status is TODO"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -119,7 +125,8 @@ class TestTodoModel:
 
     def test_todo_status_can_be_in_progress(self):
         """Test: Can create todo with IN_PROGRESS status"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -134,7 +141,8 @@ class TestTodoModel:
 
     def test_todo_status_can_be_done(self):
         """Test: Can create todo with DONE status"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -159,7 +167,8 @@ class TestTodoModel:
 
     def test_todo_default_priority_is_medium(self):
         """Test: Default priority is MEDIUM"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -172,7 +181,8 @@ class TestTodoModel:
 
     def test_todo_priority_can_be_low(self):
         """Test: Can create todo with LOW priority"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -187,7 +197,8 @@ class TestTodoModel:
 
     def test_todo_priority_can_be_high(self):
         """Test: Can create todo with HIGH priority"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -202,7 +213,8 @@ class TestTodoModel:
 
     def test_todo_due_date_is_optional(self):
         """Test: Todo due_date is optional"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -215,7 +227,8 @@ class TestTodoModel:
 
     def test_todo_with_due_date(self):
         """Test: Todo can have due_date"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -232,7 +245,8 @@ class TestTodoModel:
 
     def test_todo_assigned_to_is_optional(self):
         """Test: Todo assigned_to is optional"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -245,7 +259,8 @@ class TestTodoModel:
 
     def test_todo_with_assigned_to(self, user):
         """Test: Todo can be assigned to a user"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -260,7 +275,8 @@ class TestTodoModel:
 
     def test_todo_assigned_to_uses_set_null_on_delete(self, user):
         """Test: assigned_to uses SET_NULL when user is deleted"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -279,7 +295,8 @@ class TestTodoModel:
 
     def test_todo_has_timestamps(self):
         """Test: Todo has created_at and updated_at (BaseModel)"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -293,7 +310,8 @@ class TestTodoModel:
 
     def test_todo_has_audit_fields(self, user):
         """Test: Todo has created_by and updated_by (BaseModel)"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -310,7 +328,8 @@ class TestTodoModel:
 
     def test_todo_has_soft_delete_fields(self):
         """Test: Todo has is_deleted, deleted_at, deleted_by (BaseModel)"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -326,7 +345,8 @@ class TestTodoModel:
 
     def test_todo_can_be_soft_deleted(self, user):
         """Test: Todo can be soft deleted"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -343,7 +363,8 @@ class TestTodoModel:
 
     def test_todo_str_representation(self):
         """Test: Todo __str__ returns meaningful representation"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -357,7 +378,8 @@ class TestTodoModel:
 
     def test_delete_family_cascades_to_todos(self):
         """Test: Deleting family hard-deletes all related Todos"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -373,7 +395,8 @@ class TestTodoModel:
 
     def test_family_has_reverse_relationship_to_todos(self):
         """Test: Family has reverse relationship to todos"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -388,7 +411,8 @@ class TestTodoModel:
 
     def test_user_has_reverse_relationship_to_assigned_todos(self, user):
         """Test: User has reverse relationship to assigned todos"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -403,7 +427,8 @@ class TestTodoModel:
 
     def test_todo_status_can_be_updated(self):
         """Test: Todo status can be updated"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -420,7 +445,8 @@ class TestTodoModel:
 
     def test_todo_priority_can_be_updated(self):
         """Test: Todo priority can be updated"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -437,7 +463,8 @@ class TestTodoModel:
 
     def test_multiple_todos_per_family(self):
         """Test: Family can have multiple todos"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -452,7 +479,8 @@ class TestTodoModel:
 
     def test_user_can_have_multiple_assigned_todos(self, user):
         """Test: User can be assigned multiple todos"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -466,7 +494,8 @@ class TestTodoModel:
 
     def test_todo_with_all_fields(self, user):
         """Test: Create todo with all fields populated"""
-        from apps.shared.models import Family, Todo
+        from apps.shared.models import Family
+        from apps.shared.models import Todo
 
         # Arrange
         family = Family.objects.create(name="Smith Family")

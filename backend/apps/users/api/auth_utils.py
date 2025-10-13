@@ -5,12 +5,13 @@ Ham Dog & TC's helper functions for auth flows.
 Reusable functions for email verification and other auth tasks.
 """
 
-from django.core.signing import Signer
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+import logging
+
 from django.conf import settings
 from django.contrib.sites.models import Site
-import logging
+from django.core.mail import send_mail
+from django.core.signing import Signer
+from django.template.loader import render_to_string
 
 logger = logging.getLogger(__name__)
 

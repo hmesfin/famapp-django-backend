@@ -119,7 +119,8 @@ class TestFamilyMemberModel:
 
     def test_create_family_member_with_user_and_role(self, user):
         """Test: Create family member with user, family, and role"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -147,7 +148,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_default_role_is_parent(self, user):
         """Test: Default role is PARENT"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -160,7 +162,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_unique_constraint(self, user):
         """Test: Unique constraint (family, user) - cannot add same user twice"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -176,7 +179,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_role_enum_organizer(self, user):
         """Test: Can create member with ORGANIZER role"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -191,7 +195,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_role_enum_parent(self, user):
         """Test: Can create member with PARENT role"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -206,7 +211,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_role_enum_child(self, user):
         """Test: Can create member with CHILD role"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -221,7 +227,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_has_timestamps(self, user):
         """Test: FamilyMember has created_at and updated_at (SimpleBaseModel)"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -235,7 +242,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_does_not_have_audit_fields(self, user):
         """Test: FamilyMember does NOT have audit fields (uses SimpleBaseModel)"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -247,7 +255,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_str_representation(self, user):
         """Test: FamilyMember __str__ returns meaningful representation"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -263,7 +272,8 @@ class TestFamilyMemberModel:
 
     def test_delete_family_cascades_to_members(self, user):
         """Test: Deleting family soft-deletes all related FamilyMembers"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -279,7 +289,8 @@ class TestFamilyMemberModel:
 
     def test_family_members_reverse_relationship(self, user):
         """Test: Family has reverse relationship to members via 'memberships'"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -296,7 +307,8 @@ class TestFamilyMemberModel:
 
     def test_user_can_belong_to_multiple_families(self, user):
         """Test: User can be a member of multiple families"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family1 = Family.objects.create(name="Smith Family")
@@ -311,7 +323,8 @@ class TestFamilyMemberModel:
 
     def test_family_can_have_multiple_members(self):
         """Test: Family can have multiple members"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
@@ -331,7 +344,8 @@ class TestFamilyMemberModel:
 
     def test_family_member_role_can_be_updated(self, user):
         """Test: FamilyMember role can be updated"""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         # Arrange
         family = Family.objects.create(name="Smith Family")
