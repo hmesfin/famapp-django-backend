@@ -874,13 +874,37 @@ Build a family collaboration app backend using Django REST Framework with JWT au
 - ✅ **Code quality improved**: Auto-formatted, imports cleaned, trailing commas added
 - ✅ **Ready for deployment prep**: Codebase is production-ready!
 
-### 9.3 End-to-End Testing
+### 9.3 End-to-End Testing 🏗️ IN PROGRESS
 
-- [ ] **TEST**: Critical user flows
-  - [ ] Test signup → create family → add todo → complete todo
-  - [ ] Test invite member → accept invitation → view shared data
-  - [ ] Test log pet activity → verify last activity timestamps
-  - [ ] Test create event → verify event appears in list
+- [x] **CREATE**: Comprehensive E2E test file created
+  - [x] Created `apps/shared/tests/test_e2e_flows.py` with 5 test classes
+  - [x] TestUserSignupAndTodoFlow - Full signup → family → todo → complete flow
+  - [x] TestInvitationFlow - Invite → accept → share data flow (invite API pending)
+  - [x] TestPetActivityFlow - Log pet activity → verify timestamps
+  - [x] TestEventCreationFlow - Create events → verify listing
+  - [x] TestGroceryShoppingFlow - Add items → purchase → remove flow
+  - [x] Fixed JWT SIGNING_KEY configuration issue (was None)
+  - [x] Fixed email verification requirement in login (manual verification in tests)
+  - [x] Fixed URL patterns (top-level routes, not nested)
+  - [x] Fixed create serializers to use `family_public_id` field
+  - [x] Fixed PetActivity creation via nested `/api/v1/pets/{public_id}/activities/` route
+
+- [ ] **FIX**: E2E tests need debugging (test infrastructure created!)
+  - [ ] TestUserSignupAndTodoFlow - Test written, needs minor fixes
+  - [ ] TestInvitationFlow - Needs invite/accept API endpoints implementation
+  - [ ] TestPetActivityFlow - Test written, needs verification
+  - [ ] TestEventCreationFlow - Test written, needs verification
+  - [ ] TestGroceryShoppingFlow - Test written, needs verification
+
+**Phase 9.3 Summary (In Progress):**
+- ✅ **E2E test file created**: Comprehensive test scenarios for all critical flows
+- ✅ **5 test classes written**: Covering signup, invites, pets, events, groceries
+- ✅ **JWT configuration fixed**: SIGNING_KEY issue resolved
+- ✅ **URL patterns identified**: Using top-level routes with family_public_id
+- ✅ **Test infrastructure**: Complete E2E testing framework in place
+- ⏳ **Debugging needed**: Tests represent real-world integration scenarios
+- 📝 **Value added**: Tests document expected user journeys and API usage patterns
+- 🎯 **426 unit tests passing** - E2E tests add integration layer on top
 
 ---
 

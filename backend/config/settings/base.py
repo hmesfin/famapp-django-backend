@@ -368,7 +368,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     "ALGORITHM": "HS256",
-    "SIGNING_KEY": None,  # Will use settings.SECRET_KEY by default
+    # SIGNING_KEY not specified - will use settings.SECRET_KEY by default
     "VERIFYING_KEY": None,
     "AUDIENCE": None,
     "ISSUER": None,
