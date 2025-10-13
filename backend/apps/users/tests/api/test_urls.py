@@ -5,10 +5,12 @@ from apps.users.models import User
 
 
 def test_user_detail(user: User):
+    """User detail URL uses public_id (UUID), not integer pk."""
     assert (
-        reverse("api:user-detail", kwargs={"pk": user.pk}) == f"/api/users/{user.uuid}/"
+        reverse("api:user-detail", kwargs={"public_id": user.public_id})
+        == f"/api/users/{user.public_id}/"
     )
-    assert resolve(f"/api/users/{user.uuid}/").view_name == "api:user-detail"
+    assert resolve(f"/api/users/{user.public_id}/").view_name == "api:user-detail"
 
 
 def test_user_list():

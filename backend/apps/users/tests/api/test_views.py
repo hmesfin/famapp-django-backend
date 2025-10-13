@@ -28,7 +28,8 @@ class TestUserViewSet:
 
         response = view.me(request)  # type: ignore[call-arg, arg-type, misc]
 
-        assert response.data == {
-            "url": f"http://testserver/api/users/{user.uuid}/",
-            "name": user.name,
-        }
+        # User model uses first_name and last_name, not 'name'
+        assert response.data["url"] == f"http://testserver/api/users/{user.public_id}/"
+        assert response.data["email"] == user.email
+        assert "first_name" in response.data
+        assert "last_name" in response.data

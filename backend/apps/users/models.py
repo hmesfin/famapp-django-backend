@@ -56,7 +56,7 @@ class User(UUIDMixin, TimestampedMixin, AbstractUser):
             str: URL for user detail using public_id (Stripe/Instagram pattern).
 
         """
-        return reverse("users:detail", kwargs={"pk": self.public_id})
+        return reverse("api:user-detail", kwargs={"public_id": self.public_id})
 
     def get_full_name(self) -> str:
         """
