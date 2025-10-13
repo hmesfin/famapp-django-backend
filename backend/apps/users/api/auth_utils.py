@@ -61,3 +61,52 @@ def send_verification_email(user):
     except Exception as e:
         logger.error(f"Failed to send verification email to {user.email}: {e}")
         return False
+
+
+def send_otp_email(user):
+    """
+    Send OTP verification email to a user.
+
+    Args:
+        user: User instance to send OTP verification email to
+
+    Returns:
+        dict: {"success": bool, "otp": str (for testing only)}
+    """
+    from apps.users.otp import generate_otp, store_otp
+
+    try:
+        # Generate and store OTP
+        otp = generate_otp()
+        store_otp(user.email, otp)
+
+        # Prepare email context
+        context = {
+            "user": user,
+            "otp": otp,
+            "expiration_minutes": 10,
+            "app_name": "FamApp",
+        }
+
+        # Render email templates
+        subject = "FamApp - Your Verification Code"
+        html_message = render_to_string("emails/otp_verification_email.html", context)
+        plain_message = render_to_string("emails/otp_verification_email.txt", context)
+
+        # Send email
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+
+        logger.info(f"OTP email sent successfully to {user.email}")
+        return {"success": True, "otp": otp}
+
+    except Exception as e:
+        logger.error(f"Failed to send OTP email to {user.email}: {e}")
+        # Return OTP even on failure for testing purposes
+        return {"success": False, "otp": otp if 'otp' in locals() else None}

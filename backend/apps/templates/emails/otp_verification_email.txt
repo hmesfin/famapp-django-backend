@@ -1,0 +1,33 @@
+{{ app_name }} - Email Verification
+================================================================================
+
+Hello {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.email }}{% endif %},
+
+We received a request to verify your email address for your {{ app_name }} account.
+
+YOUR VERIFICATION CODE
+-----------------------
+
+    {{ otp }}
+
+-----------------------
+
+IMPORTANT: This code will expire in {{ expiration_minutes }} minutes for security reasons.
+
+Enter this code in the app to complete your email verification.
+
+
+SECURITY NOTICE
+===============
+If you didn't request this verification code, please ignore this email and
+contact our support team immediately. Your account security is important to us.
+
+
+Thank you for using {{ app_name }}!
+
+The {{ app_name }} Team
+
+
+================================================================================
+This is an automated email. Please do not reply to this message.
+© 2025 {{ app_name }}. All rights reserved.

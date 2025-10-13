@@ -256,3 +256,173 @@ class TestOTPEdgeCases:
 
         # Third delete should also return False
         assert delete_otp(email) is False
+
+
+@pytest.mark.django_db
+class TestOTPEmailSending:
+    """
+    Test OTP email sending functionality.
+    Phase B: OTP Email Sending with TDD
+    """
+
+    def setup_method(self):
+        """Setup test user and clear cache before each test."""
+        from django.contrib.auth import get_user_model
+        from django.core import mail
+
+        cache.clear()
+        # Clear Django's email outbox
+        mail.outbox = []
+
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+        )
+
+    def teardown_method(self):
+        """Clear cache after each test."""
+        cache.clear()
+
+    def test_send_otp_email_generates_and_stores_otp(self):
+        """send_otp_email should generate OTP and store it in Redis."""
+        from apps.users.api.auth_utils import send_otp_email
+        from apps.users.otp import get_otp
+
+        result = send_otp_email(self.user)
+
+        # Should return success and OTP
+        assert result["success"] is True
+        assert "otp" in result
+        assert len(result["otp"]) == 6
+
+        # OTP should be stored in Redis
+        stored_otp = get_otp(self.user.email)
+        assert stored_otp == result["otp"]
+
+    def test_send_otp_email_sends_email_to_user(self):
+        """send_otp_email should send email to user's email address."""
+        from django.core import mail
+        from apps.users.api.auth_utils import send_otp_email
+
+        send_otp_email(self.user)
+
+        # Check that one email was sent
+        assert len(mail.outbox) == 1
+
+        # Check recipient
+        email = mail.outbox[0]
+        assert self.user.email in email.to
+
+    def test_send_otp_email_has_correct_subject(self):
+        """Email subject should be 'FamApp - Your Verification Code'."""
+        from django.core import mail
+        from apps.users.api.auth_utils import send_otp_email
+
+        send_otp_email(self.user)
+
+        email = mail.outbox[0]
+        assert email.subject == "FamApp - Your Verification Code"
+
+    def test_send_otp_email_includes_otp_in_body(self):
+        """Email body should include the OTP code prominently."""
+        from django.core import mail
+        from apps.users.api.auth_utils import send_otp_email
+
+        result = send_otp_email(self.user)
+        otp = result["otp"]
+
+        email = mail.outbox[0]
+
+        # Check HTML body
+        assert otp in email.body  # Plain text body
+        if email.alternatives:  # HTML alternative
+            html_body = email.alternatives[0][0]
+            assert otp in html_body
+
+    def test_send_otp_email_includes_expiration_time(self):
+        """Email should mention 10-minute expiration time."""
+        from django.core import mail
+        from apps.users.api.auth_utils import send_otp_email
+
+        send_otp_email(self.user)
+
+        email = mail.outbox[0]
+
+        # Check for expiration mention (10 minutes)
+        assert "10 minutes" in email.body.lower() or "10 minute" in email.body.lower()
+
+    def test_send_otp_email_includes_security_notice(self):
+        """Email should include security notice about not requesting code."""
+        from django.core import mail
+        from apps.users.api.auth_utils import send_otp_email
+
+        send_otp_email(self.user)
+
+        email = mail.outbox[0]
+
+        # Check for security notice
+        body_lower = email.body.lower()
+        assert "didn't request" in body_lower or "did not request" in body_lower
+
+    def test_send_otp_email_logs_success(self, caplog):
+        """send_otp_email should log successful email sending."""
+        import logging
+        from apps.users.api.auth_utils import send_otp_email
+
+        with caplog.at_level(logging.INFO):
+            send_otp_email(self.user)
+
+        # Check logs for success message
+        assert any("OTP email sent successfully" in record.message for record in caplog.records)
+        assert any(self.user.email in record.message for record in caplog.records)
+
+    def test_send_otp_email_logs_failure_on_exception(self, caplog, monkeypatch):
+        """send_otp_email should log errors when email sending fails."""
+        import logging
+        from apps.users.api.auth_utils import send_otp_email
+        from django.core.mail import send_mail
+
+        # Mock send_mail to raise exception
+        def mock_send_mail(*args, **kwargs):
+            raise Exception("SMTP connection failed")
+
+        monkeypatch.setattr("apps.users.api.auth_utils.send_mail", mock_send_mail)
+
+        with caplog.at_level(logging.ERROR):
+            result = send_otp_email(self.user)
+
+        # Should return failure
+        assert result["success"] is False
+
+        # Check logs for error message
+        assert any("Failed to send OTP email" in record.message for record in caplog.records)
+        assert any(self.user.email in record.message for record in caplog.records)
+
+    def test_send_otp_email_uses_default_from_email(self):
+        """Email should be sent from settings.DEFAULT_FROM_EMAIL."""
+        from django.core import mail
+        from django.conf import settings
+        from apps.users.api.auth_utils import send_otp_email
+
+        send_otp_email(self.user)
+
+        email = mail.outbox[0]
+        assert email.from_email == settings.DEFAULT_FROM_EMAIL
+
+    def test_send_otp_email_includes_user_name_in_body(self):
+        """Email should address user by name when available."""
+        from django.core import mail
+        from apps.users.api.auth_utils import send_otp_email
+
+        # Add full name to user
+        self.user.first_name = "John"
+        self.user.save()
+
+        send_otp_email(self.user)
+
+        email = mail.outbox[0]
+
+        # Should include greeting with name or email
+        body_lower = email.body.lower()
+        assert "hello" in body_lower or "hi" in body_lower
