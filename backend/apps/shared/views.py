@@ -11,36 +11,43 @@ Ham Dog & TC building family collaboration APIs! 🚀
 """
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, OuterRef, Subquery
+from django.db.models import Count
+from django.db.models import OuterRef
+from django.db.models import Subquery
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view
+from rest_framework import status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.shared.mixins import FamilyAccessMixin
-from apps.shared.models import Family, FamilyMember, GroceryItem, ScheduleEvent, Todo
-from apps.shared.permissions import IsFamilyAdmin, IsFamilyMember
-from apps.shared.serializers import (
-    EventCreateSerializer,
-    EventSerializer,
-    EventUpdateSerializer,
-    FamilyCreateSerializer,
-    FamilyDetailSerializer,
-    FamilySerializer,
-    FamilyUpdateSerializer,
-    GroceryCreateSerializer,
-    GrocerySerializer,
-    GroceryUpdateSerializer,
-    InviteMemberSerializer,
-    MemberSerializer,
-    TodoCreateSerializer,
-    TodoSerializer,
-    TodoUpdateSerializer,
-    UpdateMemberRoleSerializer,
-)
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.shared.models import GroceryItem
+from apps.shared.models import ScheduleEvent
+from apps.shared.models import Todo
+from apps.shared.permissions import IsFamilyAdmin
+from apps.shared.permissions import IsFamilyMember
+from apps.shared.serializers import EventCreateSerializer
+from apps.shared.serializers import EventSerializer
+from apps.shared.serializers import EventUpdateSerializer
+from apps.shared.serializers import FamilyCreateSerializer
+from apps.shared.serializers import FamilyDetailSerializer
+from apps.shared.serializers import FamilySerializer
+from apps.shared.serializers import FamilyUpdateSerializer
+from apps.shared.serializers import GroceryCreateSerializer
+from apps.shared.serializers import GrocerySerializer
+from apps.shared.serializers import GroceryUpdateSerializer
+from apps.shared.serializers import InviteMemberSerializer
+from apps.shared.serializers import MemberSerializer
+from apps.shared.serializers import TodoCreateSerializer
+from apps.shared.serializers import TodoSerializer
+from apps.shared.serializers import TodoUpdateSerializer
+from apps.shared.serializers import UpdateMemberRoleSerializer
 
 User = get_user_model()
 
@@ -261,7 +268,9 @@ class FamilyViewSet(viewsets.ModelViewSet):
                 family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
             ).exists():
                 return Response(
-                    {"detail": "You must be a family organizer to perform this action."},
+                    {
+                        "detail": "You must be a family organizer to perform this action."
+                    },
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
@@ -322,7 +331,9 @@ class FamilyViewSet(viewsets.ModelViewSet):
                 family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
             ).exists():
                 return Response(
-                    {"detail": "You must be a family organizer to perform this action."},
+                    {
+                        "detail": "You must be a family organizer to perform this action."
+                    },
                     status=status.HTTP_403_FORBIDDEN,
                 )
 

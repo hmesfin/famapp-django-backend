@@ -13,7 +13,9 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.shared.models import Family, FamilyMember, ScheduleEvent
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.shared.models import ScheduleEvent
 
 User = get_user_model()
 

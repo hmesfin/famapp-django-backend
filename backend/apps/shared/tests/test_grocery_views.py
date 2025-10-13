@@ -12,7 +12,9 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.shared.models import Family, FamilyMember, GroceryItem
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.shared.models import GroceryItem
 
 User = get_user_model()
 

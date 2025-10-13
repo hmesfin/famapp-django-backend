@@ -7,15 +7,14 @@ All URLs use public_id (UUID), NOT integer id!
 Ham Dog & TC wiring up the APIs! 🚀
 """
 
-from django.urls import include, path
+from django.urls import include
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from apps.shared.views import (
-    FamilyViewSet,
-    GroceryItemViewSet,
-    ScheduleEventViewSet,
-    TodoViewSet,
-)
+from apps.shared.views import FamilyViewSet
+from apps.shared.views import GroceryItemViewSet
+from apps.shared.views import ScheduleEventViewSet
+from apps.shared.views import TodoViewSet
 
 # Create DRF router
 router = DefaultRouter()

@@ -13,7 +13,9 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from apps.shared.models import Family, FamilyMember, Todo
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.shared.models import Todo
 
 User = get_user_model()
 

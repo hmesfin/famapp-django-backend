@@ -11,7 +11,9 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory
 
-from apps.shared.models import Family, FamilyMember, Todo
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.shared.models import Todo
 
 User = get_user_model()
 
@@ -27,8 +29,9 @@ class TestFamilyAccessMixin:
 
     def test_filters_queryset_to_user_families_only(self):
         """Test that mixin filters queryset to user's families only."""
-        from apps.shared.mixins import FamilyAccessMixin
         from rest_framework import viewsets
+
+        from apps.shared.mixins import FamilyAccessMixin
 
         # Create two families with different members
         user1 = User.objects.create_user(
@@ -80,9 +83,10 @@ class TestFamilyAccessMixin:
 
     def test_excludes_soft_deleted_families(self):
         """Test that mixin excludes resources from soft-deleted families."""
-        from apps.shared.mixins import FamilyAccessMixin
-        from rest_framework import viewsets
         from django.utils import timezone
+        from rest_framework import viewsets
+
+        from apps.shared.mixins import FamilyAccessMixin
 
         # Create user and family
         user = User.objects.create_user(
@@ -128,9 +132,10 @@ class TestFamilyAccessMixin:
 
     def test_excludes_soft_deleted_resources(self):
         """Test that mixin excludes soft-deleted resources themselves."""
-        from apps.shared.mixins import FamilyAccessMixin
-        from rest_framework import viewsets
         from django.utils import timezone
+        from rest_framework import viewsets
+
+        from apps.shared.mixins import FamilyAccessMixin
 
         # Create user and family
         user = User.objects.create_user(
@@ -179,8 +184,9 @@ class TestFamilyAccessMixin:
 
     def test_returns_empty_queryset_if_user_not_in_any_family(self):
         """Test that mixin returns empty queryset if user has no families."""
-        from apps.shared.mixins import FamilyAccessMixin
         from rest_framework import viewsets
+
+        from apps.shared.mixins import FamilyAccessMixin
 
         # Create user with no family memberships
         user = User.objects.create_user(
@@ -218,8 +224,9 @@ class TestFamilyAccessMixin:
 
     def test_works_with_multiple_families(self):
         """Test that mixin includes resources from all user's families."""
-        from apps.shared.mixins import FamilyAccessMixin
         from rest_framework import viewsets
+
+        from apps.shared.mixins import FamilyAccessMixin
 
         # Create user who belongs to multiple families
         user = User.objects.create_user(
@@ -266,8 +273,9 @@ class TestFamilyAccessMixin:
 
     def test_respects_base_queryset_filters(self):
         """Test that mixin preserves additional filters on base queryset."""
-        from apps.shared.mixins import FamilyAccessMixin
         from rest_framework import viewsets
+
+        from apps.shared.mixins import FamilyAccessMixin
 
         # Create user and family
         user = User.objects.create_user(

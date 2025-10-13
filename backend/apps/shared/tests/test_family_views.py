@@ -14,7 +14,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
 
 User = get_user_model()
 
@@ -139,9 +140,7 @@ class TestFamilyList:
         )
 
         # Create family for other user (should not appear in results)
-        other_family = Family.objects.create(
-            name="Other Family", created_by=other_user
-        )
+        other_family = Family.objects.create(name="Other Family", created_by=other_user)
         FamilyMember.objects.create(
             family=other_family, user=other_user, role=FamilyMember.Role.ORGANIZER
         )

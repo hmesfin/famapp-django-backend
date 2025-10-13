@@ -227,7 +227,8 @@ class TodoCreateSerializer(serializers.ModelSerializer):
 
     def validate_family_public_id(self, value):
         """Validate that family exists and user is a member."""
-        from apps.shared.models import Family, FamilyMember
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
 
         try:
             family = Family.objects.get(public_id=value, is_deleted=False)
