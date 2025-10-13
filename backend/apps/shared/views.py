@@ -14,6 +14,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, OuterRef, Subquery
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -44,6 +45,14 @@ from apps.shared.serializers import (
 User = get_user_model()
 
 
+@extend_schema_view(
+    list=extend_schema(tags=["Families"]),
+    create=extend_schema(tags=["Families"]),
+    retrieve=extend_schema(tags=["Families"]),
+    update=extend_schema(tags=["Families"]),
+    partial_update=extend_schema(tags=["Families"]),
+    destroy=extend_schema(tags=["Families"]),
+)
 class FamilyViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Family CRUD operations.
@@ -60,6 +69,9 @@ class FamilyViewSet(viewsets.ModelViewSet):
 
     lookup_field = "public_id"
     lookup_url_kwarg = "public_id"
+
+    # Swagger/OpenAPI schema tag
+    tags = ["Families"]
 
     def get_permissions(self):
         """
@@ -344,6 +356,14 @@ class FamilyViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@extend_schema_view(
+    list=extend_schema(tags=["Todos"]),
+    create=extend_schema(tags=["Todos"]),
+    retrieve=extend_schema(tags=["Todos"]),
+    update=extend_schema(tags=["Todos"]),
+    partial_update=extend_schema(tags=["Todos"]),
+    destroy=extend_schema(tags=["Todos"]),
+)
 class TodoViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
     """
     ViewSet for Todo CRUD operations.
@@ -365,6 +385,9 @@ class TodoViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
     lookup_field = "public_id"
     lookup_url_kwarg = "public_id"
     permission_classes = [IsAuthenticated]
+
+    # Swagger/OpenAPI schema tag
+    tags = ["Todos"]
 
     def get_serializer_class(self):
         """
@@ -447,6 +470,14 @@ class TodoViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@extend_schema_view(
+    list=extend_schema(tags=["Events"]),
+    create=extend_schema(tags=["Events"]),
+    retrieve=extend_schema(tags=["Events"]),
+    update=extend_schema(tags=["Events"]),
+    partial_update=extend_schema(tags=["Events"]),
+    destroy=extend_schema(tags=["Events"]),
+)
 class ScheduleEventViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
     """
     ViewSet for ScheduleEvent CRUD operations.
@@ -467,6 +498,9 @@ class ScheduleEventViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
     lookup_field = "public_id"
     lookup_url_kwarg = "public_id"
     permission_classes = [IsAuthenticated]
+
+    # Swagger/OpenAPI schema tag
+    tags = ["Events"]
 
     def get_serializer_class(self):
         """
@@ -527,6 +561,14 @@ class ScheduleEventViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         instance.save()
 
 
+@extend_schema_view(
+    list=extend_schema(tags=["Groceries"]),
+    create=extend_schema(tags=["Groceries"]),
+    retrieve=extend_schema(tags=["Groceries"]),
+    update=extend_schema(tags=["Groceries"]),
+    partial_update=extend_schema(tags=["Groceries"]),
+    destroy=extend_schema(tags=["Groceries"]),
+)
 class GroceryItemViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
     """
     ViewSet for GroceryItem CRUD operations.
@@ -548,6 +590,9 @@ class GroceryItemViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
     lookup_field = "public_id"
     lookup_url_kwarg = "public_id"
     permission_classes = [IsAuthenticated]
+
+    # Swagger/OpenAPI schema tag
+    tags = ["Groceries"]
 
     def get_serializer_class(self):
         """
