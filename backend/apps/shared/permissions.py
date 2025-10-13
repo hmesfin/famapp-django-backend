@@ -31,14 +31,17 @@ class IsFamilyMember(permissions.BasePermission):
         """
         Check if user is authenticated and is a member of the family.
 
-        Looks for 'family_public_id' in view.kwargs to identify the family.
+        Looks for 'family_public_id' or 'public_id' in view.kwargs to identify the family.
         """
         # User must be authenticated
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Get family_public_id from view kwargs
-        family_public_id = view.kwargs.get("family_public_id")
+        # Get family_public_id from view kwargs (for nested routes)
+        # or public_id (for direct family routes)
+        family_public_id = view.kwargs.get("family_public_id") or view.kwargs.get(
+            "public_id"
+        )
         if not family_public_id:
             # No family specified in URL, allow the check to proceed
             # (object-level permission will handle it)
@@ -51,7 +54,9 @@ class IsFamilyMember(permissions.BasePermission):
                 family=family, user=request.user
             ).exists()
         except Family.DoesNotExist:
-            return False
+            # Return True to let the view handle the 404
+            # (If we return False, it becomes 403 instead of 404)
+            return True
 
     def has_object_permission(self, request, view, obj):
         """
@@ -96,14 +101,17 @@ class IsFamilyAdmin(permissions.BasePermission):
         """
         Check if user is authenticated and is an organizer of the family.
 
-        Looks for 'family_public_id' in view.kwargs to identify the family.
+        Looks for 'family_public_id' or 'public_id' in view.kwargs to identify the family.
         """
         # User must be authenticated
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Get family_public_id from view kwargs
-        family_public_id = view.kwargs.get("family_public_id")
+        # Get family_public_id from view kwargs (for nested routes)
+        # or public_id (for direct family routes)
+        family_public_id = view.kwargs.get("family_public_id") or view.kwargs.get(
+            "public_id"
+        )
         if not family_public_id:
             # No family specified in URL, allow the check to proceed
             # (object-level permission will handle it)
@@ -116,7 +124,9 @@ class IsFamilyAdmin(permissions.BasePermission):
                 family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
             ).exists()
         except Family.DoesNotExist:
-            return False
+            # Return True to let the view handle the 404
+            # (If we return False, it becomes 403 instead of 404)
+            return True
 
     def has_object_permission(self, request, view, obj):
         """

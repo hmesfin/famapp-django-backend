@@ -82,8 +82,8 @@ class TestIsFamilyMemberPermission:
         permission = IsFamilyMember()
         assert permission.has_permission(request, view) is False
 
-    def test_denies_access_if_family_not_found(self):
-        """Test that permission returns False if family doesn't exist."""
+    def test_allows_access_if_family_not_found(self):
+        """Test that permission returns True if family doesn't exist (to allow 404)."""
         import uuid
 
         from apps.shared.permissions import IsFamilyMember
@@ -102,8 +102,10 @@ class TestIsFamilyMemberPermission:
         view.kwargs = {"family_public_id": str(uuid.uuid4())}
 
         # Test permission
+        # Permission returns True to let the view handle the 404
+        # (If it returned False, the response would be 403 instead of 404)
         permission = IsFamilyMember()
-        assert permission.has_permission(request, view) is False
+        assert permission.has_permission(request, view) is True
 
     def test_works_with_object_permission_check(self):
         """Test that has_object_permission also works correctly."""

@@ -13,6 +13,8 @@ app_name = "api"
 urlpatterns = [
     # Auth endpoints
     path("auth/", include("apps.users.api.auth_urls", namespace="auth")),
+    # FamApp API endpoints (v1)
+    path("v1/", include("apps.shared.urls")),
     # Router URLs
     *router.urls,
 ]
