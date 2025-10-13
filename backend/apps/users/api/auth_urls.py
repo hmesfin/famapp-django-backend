@@ -44,4 +44,7 @@ urlpatterns = [
         auth_views.resend_verification_email,
         name="resend_verification",
     ),
+    # OTP verification endpoints (Phase C & D)
+    path("verify-otp/", auth_views.verify_otp, name="verify_otp"),
+    path("resend-otp/", auth_views.resend_otp, name="resend_otp"),
 ]

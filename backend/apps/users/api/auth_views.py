@@ -18,7 +18,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .auth_utils import send_verification_email
+from .auth_utils import send_verification_email, send_otp_email
 from .serializers import UserCreateSerializer
 
 User = get_user_model()
@@ -99,19 +99,36 @@ def register(request):
     """
     Register a new user with email or phone number.
 
+    Phase E: Registration Flow Integration with OTP
+
     Expected payload:
     {
         "email": "user@example.com",  # Required OR phone_number
         "phone_number": "+1234567890",  # Required OR email
         "password": "secure_password",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "User"
     }
 
     Flow:
     1. Create user with email_verified=False
-    2. Send email verification (if email provided)
-    3. Return user info (tokens on login only)
+    2. Send OTP verification email (if email provided)
+    3. Return user info (tokens on login only after OTP verification)
+
+    Success Response (201):
+    {
+        "user": {
+            "id": 1,
+            "public_id": "uuid",
+            "email": "user@example.com",
+            "first_name": "John",
+            "last_name": "User",
+            "email_verified": false
+        },
+        "message": "Registration successful! Please check your email for your verification code.",
+        "email_sent": true,
+        "requires_email_verification": true
+    }
     """
     serializer = UserCreateSerializer(data=request.data)
 
@@ -121,10 +138,11 @@ def register(request):
         user.email_verified = False
         user.save()
 
-        # Send verification email if email provided
+        # Send OTP email if email provided (Phase E Integration)
         email_sent = False
         if user.email:
-            email_sent = send_verification_email(user)
+            result = send_otp_email(user)
+            email_sent = result["success"]
 
         # Prepare user data (no tokens until login)
         user_data = {
@@ -146,7 +164,7 @@ def register(request):
                 "user": user_data,
                 "message": "Registration successful! "
                 + (
-                    "Please check your email to verify your account."
+                    "Please check your email for your verification code."
                     if email_sent
                     else "You can now log in."
                 ),
@@ -489,4 +507,189 @@ def resend_verification_email(request):
                 "message": "If an account with this email exists, you will receive a verification email.",
             },
             status=status.HTTP_200_OK,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def verify_otp(request):
+    """
+    Verify OTP code and return JWT tokens.
+
+    Phase C: OTP Verification Endpoint
+
+    Expected payload:
+    {
+        "email": "user@example.com",
+        "otp": "123456"
+    }
+
+    Success Response (200):
+    {
+        "access": "jwt_access_token",
+        "refresh": "jwt_refresh_token",
+        "user": {
+            "email": "user@example.com",
+            "first_name": "John",
+            "last_name": "Doe",
+            "email_verified": true
+        }
+    }
+
+    Error Responses (400):
+    - Invalid OTP: {"error": "Invalid OTP code"}
+    - Expired OTP: {"error": "No OTP code found for this email"}
+    - Missing OTP: {"error": "No OTP code found for this email"}
+    """
+    import logging
+    from apps.users.otp import get_otp, delete_otp
+
+    logger = logging.getLogger(__name__)
+
+    # Validate input
+    email = request.data.get("email")
+    otp_code = request.data.get("otp")
+
+    if not email or not otp_code:
+        return Response(
+            {"error": "Email and OTP are required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Get stored OTP from Redis
+    stored_otp = get_otp(email)
+
+    # Check if OTP exists (not expired)
+    if stored_otp is None:
+        return Response(
+            {"error": "No OTP code found for this email"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Verify OTP matches
+    if stored_otp != otp_code:
+        return Response(
+            {"error": "Invalid OTP code"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # OTP is valid - find and verify the user
+    try:
+        user = User.objects.get(email=email)
+        user.email_verified = True
+        user.save()
+
+        # Delete OTP (one-time use)
+        delete_otp(email)
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+
+        logger.info(f"OTP verified successfully for {email}")
+
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email_verified": user.email_verified,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def resend_otp(request):
+    """
+    Resend OTP verification code.
+
+    Phase D: OTP Resend Endpoint
+
+    Expected payload:
+    {
+        "email": "user@example.com"
+    }
+
+    Success Response (200):
+    {
+        "message": "OTP sent successfully",
+        "email": "user@example.com"
+    }
+
+    Error Responses:
+    - 400: {"error": "Email is required"}
+    - 400: {"error": "Email already verified"}
+    - 404: {"error": "User not found"}
+    - 429: {"error": "Please wait before requesting another OTP"}
+    - 500: {"error": "Failed to send OTP"}
+    """
+    import logging
+    from django.core.cache import cache
+    from apps.users.api.auth_utils import send_otp_email
+
+    logger = logging.getLogger(__name__)
+
+    # Validate input
+    email = request.data.get("email")
+
+    if not email:
+        return Response(
+            {"error": "Email is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Check if user exists
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Check if already verified
+    if user.email_verified:
+        return Response(
+            {"error": "Email already verified"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Rate limiting check (60 seconds)
+    rate_limit_key = f"otp_last_sent:{email}"
+    if cache.get(rate_limit_key):
+        return Response(
+            {"error": "Please wait before requesting another OTP"},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    # Send new OTP (this overwrites old one in Redis)
+    result = send_otp_email(user)
+
+    if result["success"]:
+        # Set rate limit (60 seconds)
+        cache.set(rate_limit_key, True, timeout=60)
+
+        logger.info(f"OTP resent to {email}")
+        return Response(
+            {
+                "message": "OTP sent successfully",
+                "email": email,
+            },
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            {"error": "Failed to send OTP"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )

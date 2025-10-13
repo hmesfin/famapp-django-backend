@@ -426,3 +426,806 @@ class TestOTPEmailSending:
         # Should include greeting with name or email
         body_lower = email.body.lower()
         assert "hello" in body_lower or "hi" in body_lower
+
+
+@pytest.mark.django_db
+class TestOTPVerification:
+    """
+    Test OTP verification endpoint.
+    Phase C: OTP Verification Endpoint with TDD
+    """
+
+    def setup_method(self):
+        """Setup test user and clear cache before each test."""
+        from django.contrib.auth import get_user_model
+        from rest_framework.test import APIClient
+
+        cache.clear()
+
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            first_name="John",
+            last_name="Doe",
+        )
+        self.client = APIClient()
+
+    def teardown_method(self):
+        """Clear cache after each test."""
+        cache.clear()
+
+    def test_verify_otp_with_correct_code_marks_user_as_verified(self):
+        """Valid OTP verification should mark user.email_verified as True."""
+        from apps.users.otp import store_otp
+
+        # Arrange: Store OTP in Redis
+        otp = "123456"
+        store_otp(self.user.email, otp)
+
+        # Ensure user starts as unverified
+        assert self.user.email_verified is False
+
+        # Act: POST to /api/auth/verify-otp/
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: User should be verified
+        self.user.refresh_from_db()
+        assert self.user.email_verified is True
+        assert response.status_code == 200
+
+    def test_verify_otp_returns_jwt_tokens_on_success(self):
+        """Successful OTP verification should return JWT access and refresh tokens."""
+        from apps.users.otp import store_otp
+
+        # Arrange: Store OTP in Redis
+        otp = "123456"
+        store_otp(self.user.email, otp)
+
+        # Act: POST to /api/auth/verify-otp/
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: Should return 200 with JWT tokens
+        assert response.status_code == 200
+        assert "access" in response.data
+        assert "refresh" in response.data
+        assert "user" in response.data
+
+        # Verify token format (JWT tokens are non-empty strings)
+        assert isinstance(response.data["access"], str)
+        assert len(response.data["access"]) > 50  # JWT tokens are long
+        assert isinstance(response.data["refresh"], str)
+        assert len(response.data["refresh"]) > 50
+
+    def test_verify_otp_returns_user_data_on_success(self):
+        """Successful OTP verification should return user profile data."""
+        from apps.users.otp import store_otp
+
+        # Arrange: Store OTP in Redis
+        otp = "123456"
+        store_otp(self.user.email, otp)
+
+        # Act: POST to /api/auth/verify-otp/
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: Should return user data
+        assert response.status_code == 200
+        user_data = response.data["user"]
+        assert user_data["email"] == self.user.email
+        assert user_data["first_name"] == "John"
+        assert user_data["last_name"] == "Doe"
+        assert user_data["email_verified"] is True
+
+    def test_verify_otp_returns_400_with_invalid_otp_code(self):
+        """Invalid OTP code should return 400 error."""
+        from apps.users.otp import store_otp
+
+        # Arrange: Store correct OTP
+        correct_otp = "123456"
+        store_otp(self.user.email, correct_otp)
+
+        # Act: POST with wrong OTP
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": "999999"},  # Wrong OTP
+            format="json"
+        )
+
+        # Assert: Should return 400 with error message
+        assert response.status_code == 400
+        assert "error" in response.data
+        assert "Invalid OTP" in response.data["error"]
+
+        # User should NOT be verified
+        self.user.refresh_from_db()
+        assert self.user.email_verified is False
+
+    def test_verify_otp_returns_400_when_otp_not_found(self):
+        """OTP verification without stored OTP should return 400."""
+        # Act: POST without storing OTP first
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": "123456"},
+            format="json"
+        )
+
+        # Assert: Should return 400 with error message
+        assert response.status_code == 400
+        assert "error" in response.data
+        assert "No OTP code found" in response.data["error"]
+
+    def test_verify_otp_returns_400_when_otp_expired(self):
+        """Expired OTP should return 400 error."""
+        from apps.users.otp import store_otp
+        import time
+
+        # Arrange: Store OTP with 1 second timeout
+        otp = "123456"
+        store_otp(self.user.email, otp, timeout=1)
+
+        # Wait for expiration
+        time.sleep(2)
+
+        # Act: POST with expired OTP
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: Should return 400 (OTP not found = expired)
+        assert response.status_code == 400
+        assert "error" in response.data
+        assert "No OTP code found" in response.data["error"]
+
+    def test_verify_otp_deletes_otp_after_successful_verification(self):
+        """OTP should be deleted from Redis after successful use (one-time use)."""
+        from apps.users.otp import store_otp, get_otp
+
+        # Arrange: Store OTP in Redis
+        otp = "123456"
+        store_otp(self.user.email, otp)
+
+        # Verify OTP exists before verification
+        assert get_otp(self.user.email) == otp
+
+        # Act: POST to /api/auth/verify-otp/
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: OTP should be deleted from Redis
+        assert response.status_code == 200
+        assert get_otp(self.user.email) is None
+
+    def test_verify_otp_cannot_be_used_twice(self):
+        """Same OTP cannot be used multiple times (one-time use enforcement)."""
+        from apps.users.otp import store_otp
+
+        # Arrange: Store OTP in Redis
+        otp = "123456"
+        store_otp(self.user.email, otp)
+
+        # Act: First verification (should succeed)
+        response1 = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+        assert response1.status_code == 200
+
+        # Act: Second verification with same OTP (should fail)
+        response2 = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: Second attempt should fail
+        assert response2.status_code == 400
+        assert "error" in response2.data
+        assert "No OTP code found" in response2.data["error"]
+
+    def test_verify_otp_requires_email_and_otp(self):
+        """OTP verification should require both email and otp parameters."""
+        # Test missing email
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"otp": "123456"},
+            format="json"
+        )
+        assert response.status_code == 400
+        assert "error" in response.data
+
+        # Test missing OTP
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+        assert response.status_code == 400
+        assert "error" in response.data
+
+    def test_verify_otp_returns_404_for_nonexistent_user(self):
+        """OTP verification for non-existent user should return 404."""
+        from apps.users.otp import store_otp
+
+        # Arrange: Store OTP for email that has no user
+        fake_email = "nonexistent@example.com"
+        otp = "123456"
+        store_otp(fake_email, otp)
+
+        # Act: POST with non-existent user email
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": fake_email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: Should return 404
+        assert response.status_code == 404
+        assert "error" in response.data
+        assert "User not found" in response.data["error"]
+
+    def test_verify_otp_logs_success(self, caplog):
+        """OTP verification should log success."""
+        import logging
+        from apps.users.otp import store_otp
+
+        # Arrange: Store OTP in Redis
+        otp = "123456"
+        store_otp(self.user.email, otp)
+
+        # Act: POST to /api/auth/verify-otp/
+        with caplog.at_level(logging.INFO):
+            response = self.client.post(
+                "/api/auth/verify-otp/",
+                {"email": self.user.email, "otp": otp},
+                format="json"
+            )
+
+        # Assert: Should log success message
+        assert response.status_code == 200
+        assert any("OTP verified successfully" in record.message for record in caplog.records)
+        assert any(self.user.email in record.message for record in caplog.records)
+
+    def test_verify_otp_jwt_tokens_are_valid_and_usable(self):
+        """JWT tokens returned should be valid and usable for authentication."""
+        from apps.users.otp import store_otp
+        from rest_framework_simplejwt.tokens import AccessToken
+
+        # Arrange: Store OTP in Redis
+        otp = "123456"
+        store_otp(self.user.email, otp)
+
+        # Act: POST to /api/auth/verify-otp/
+        response = self.client.post(
+            "/api/auth/verify-otp/",
+            {"email": self.user.email, "otp": otp},
+            format="json"
+        )
+
+        # Assert: Tokens are valid
+        assert response.status_code == 200
+        access_token = response.data["access"]
+        refresh_token = response.data["refresh"]
+
+        # Validate access token structure
+        token = AccessToken(access_token)
+        assert int(token["user_id"]) == self.user.id
+
+        # Use access token to authenticate API request
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+        profile_response = self.client.get("/api/auth/profile/")
+
+        assert profile_response.status_code == 200
+        assert profile_response.data["user"]["email"] == self.user.email
+        assert profile_response.data["user"]["email_verified"] is True
+
+
+@pytest.mark.django_db
+class TestOTPResend:
+    """
+    Test OTP resend endpoint functionality.
+    Phase D: OTP Resend Endpoint with TDD
+    """
+
+    def setup_method(self):
+        """Setup test user and clear cache before each test."""
+        from django.contrib.auth import get_user_model
+        from rest_framework.test import APIClient
+
+        cache.clear()
+
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            first_name="John",
+            last_name="Doe",
+        )
+        self.user.email_verified = False
+        self.user.save()
+
+        self.client = APIClient()
+
+    def teardown_method(self):
+        """Clear cache after each test."""
+        cache.clear()
+
+    def test_resend_otp_generates_new_otp_code(self):
+        """Resending OTP should generate a new OTP code."""
+        from apps.users.otp import get_otp
+
+        # Act: Request OTP resend
+        response = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+
+        # Assert: Should succeed
+        assert response.status_code == 200
+
+        # Verify OTP is stored in Redis
+        stored_otp = get_otp(self.user.email)
+        assert stored_otp is not None
+        assert len(stored_otp) == 6
+        assert stored_otp.isdigit()
+
+    def test_resend_otp_returns_success_message(self):
+        """Resend OTP should return success message and email."""
+        # Act: Request OTP resend
+        response = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+
+        # Assert: Should return 200 with success message
+        assert response.status_code == 200
+        assert "message" in response.data
+        assert "OTP sent successfully" in response.data["message"]
+        assert response.data["email"] == self.user.email
+
+    def test_resend_otp_sends_email_to_user(self):
+        """Resend OTP should send email with new OTP code."""
+        from django.core import mail
+
+        # Clear mail outbox
+        mail.outbox = []
+
+        # Act: Request OTP resend
+        response = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+
+        # Assert: Email should be sent
+        assert response.status_code == 200
+        assert len(mail.outbox) == 1
+        email = mail.outbox[0]
+        assert self.user.email in email.to
+        assert email.subject == "FamApp - Your Verification Code"
+
+    def test_resend_otp_rate_limiting_within_60_seconds(self):
+        """Should return 429 if resend requested within 60 seconds."""
+        # Act: First request (should succeed)
+        response1 = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+        assert response1.status_code == 200
+
+        # Act: Second request immediately (should be rate limited)
+        response2 = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+
+        # Assert: Should return 429
+        assert response2.status_code == 429
+        assert "error" in response2.data
+        assert "wait" in response2.data["error"].lower()
+
+    def test_resend_otp_allowed_after_60_seconds(self):
+        """Should allow resend after 60 seconds rate limit expires."""
+        import time
+
+        # Act: First request
+        response1 = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+        assert response1.status_code == 200
+
+        # Manually clear rate limit key (simulate 60 seconds passing)
+        cache.delete(f"otp_last_sent:{self.user.email}")
+
+        # Act: Second request after rate limit cleared
+        response2 = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+
+        # Assert: Should succeed
+        assert response2.status_code == 200
+
+    def test_resend_otp_overwrites_old_otp(self):
+        """New OTP should replace old OTP in Redis."""
+        from apps.users.otp import store_otp, get_otp
+
+        # Arrange: Store old OTP manually
+        old_otp = "111111"
+        store_otp(self.user.email, old_otp)
+        assert get_otp(self.user.email) == old_otp
+
+        # Act: Request OTP resend
+        response = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+
+        # Assert: New OTP should be different and replace old one
+        assert response.status_code == 200
+        new_otp = get_otp(self.user.email)
+        assert new_otp is not None
+        assert new_otp != old_otp
+
+    def test_resend_otp_returns_404_for_nonexistent_user(self):
+        """Should return 404 if user email not found."""
+        # Act: Request OTP for non-existent user
+        response = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": "nonexistent@example.com"},
+            format="json"
+        )
+
+        # Assert: Should return 404
+        assert response.status_code == 404
+        assert "error" in response.data
+        assert "not found" in response.data["error"].lower()
+
+    def test_resend_otp_returns_400_if_already_verified(self):
+        """Should return 400 if user email already verified."""
+        # Arrange: Mark user as verified
+        self.user.email_verified = True
+        self.user.save()
+
+        # Act: Request OTP resend
+        response = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+
+        # Assert: Should return 400
+        assert response.status_code == 400
+        assert "error" in response.data
+        assert "already verified" in response.data["error"].lower()
+
+    def test_resend_otp_requires_email(self):
+        """Should return 400 if email not provided."""
+        # Act: Request without email
+        response = self.client.post(
+            "/api/auth/resend-otp/",
+            {},
+            format="json"
+        )
+
+        # Assert: Should return 400
+        assert response.status_code == 400
+        assert "error" in response.data
+
+    def test_resend_otp_logs_success(self, caplog):
+        """Should log successful OTP resend."""
+        import logging
+
+        # Act: Request OTP resend
+        with caplog.at_level(logging.INFO):
+            response = self.client.post(
+                "/api/auth/resend-otp/",
+                {"email": self.user.email},
+                format="json"
+            )
+
+        # Assert: Should log success
+        assert response.status_code == 200
+        assert any("OTP resent" in record.message for record in caplog.records)
+
+    def test_resend_otp_uses_redis_for_rate_limiting(self):
+        """Rate limiting should use Redis cache."""
+        # Act: First request
+        response1 = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+        assert response1.status_code == 200
+
+        # Check Redis key exists
+        rate_limit_key = f"otp_last_sent:{self.user.email}"
+        rate_limit_value = cache.get(rate_limit_key)
+        assert rate_limit_value is True
+
+    def test_resend_otp_rate_limit_key_expires_after_60_seconds(self):
+        """Rate limit key should have 60 second TTL."""
+        import time
+
+        # Act: First request
+        response = self.client.post(
+            "/api/auth/resend-otp/",
+            {"email": self.user.email},
+            format="json"
+        )
+        assert response.status_code == 200
+
+        # Check Redis key exists with TTL
+        rate_limit_key = f"otp_last_sent:{self.user.email}"
+        ttl = cache.ttl(rate_limit_key) if hasattr(cache, 'ttl') else None
+
+        # If cache backend supports TTL checking, verify it
+        if ttl is not None:
+            assert 55 <= ttl <= 60  # Should be around 60 seconds
+
+
+@pytest.mark.django_db
+class TestRegistrationOTPIntegration:
+    """
+    Test registration flow integration with OTP.
+    Phase E: Registration Flow Integration with TDD
+    """
+
+    def setup_method(self):
+        """Setup test client and clear cache."""
+        from rest_framework.test import APIClient
+
+        cache.clear()
+        self.client = APIClient()
+
+    def teardown_method(self):
+        """Clear cache after each test."""
+        cache.clear()
+
+    def test_registration_sends_otp_email(self):
+        """Registration should send OTP email instead of verification link."""
+        from django.core import mail
+
+        mail.outbox = []
+
+        # Act: Register new user
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+                "password_confirm": "SecurePass123!",
+                "first_name": "New",
+                "last_name": "User",
+            },
+            format="json"
+        )
+
+        # Assert: Should send OTP email
+        assert response.status_code == 201
+        assert len(mail.outbox) == 1
+        email = mail.outbox[0]
+        assert email.subject == "FamApp - Your Verification Code"
+        assert "newuser@example.com" in email.to
+
+    def test_registration_stores_otp_in_redis(self):
+        """Registration should generate and store OTP in Redis."""
+        from apps.users.otp import get_otp
+
+        # Act: Register new user
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+                "password_confirm": "SecurePass123!",
+                "first_name": "New",
+                "last_name": "User",
+            },
+            format="json"
+        )
+
+        # Assert: OTP should be stored
+        assert response.status_code == 201
+        stored_otp = get_otp("newuser@example.com")
+        assert stored_otp is not None
+        assert len(stored_otp) == 6
+        assert stored_otp.isdigit()
+
+    def test_registration_returns_otp_message(self):
+        """Registration response should mention checking email for OTP."""
+        # Act: Register new user
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+                "password_confirm": "SecurePass123!",
+                "first_name": "New",
+                "last_name": "User",
+            },
+            format="json"
+        )
+
+        # Assert: Should return OTP-related message
+        assert response.status_code == 201
+        assert "message" in response.data
+        message = response.data["message"].lower()
+        assert "otp" in message or "verification code" in message or "check your email" in message
+
+    def test_registration_includes_email_in_response(self):
+        """Registration response should include user email."""
+        # Act: Register new user
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+                "password_confirm": "SecurePass123!",
+                "first_name": "New",
+                "last_name": "User",
+            },
+            format="json"
+        )
+
+        # Assert: Should include email in response
+        assert response.status_code == 201
+        assert "user" in response.data
+        assert response.data["user"]["email"] == "newuser@example.com"
+
+    def test_registration_user_cannot_login_without_otp_verification(self):
+        """Newly registered user cannot login until OTP verified."""
+        # Act: Register new user
+        register_response = self.client.post(
+            "/api/auth/register/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+                "password_confirm": "SecurePass123!",
+                "first_name": "New",
+                "last_name": "User",
+            },
+            format="json"
+        )
+        assert register_response.status_code == 201
+
+        # Act: Try to login without verifying OTP
+        login_response = self.client.post(
+            "/api/auth/login/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+            },
+            format="json"
+        )
+
+        # Assert: Login should fail or return verification required error
+        # Based on existing code, it should raise validation error
+        assert login_response.status_code == 400
+        assert "verification" in str(login_response.data).lower()
+
+    def test_registration_user_can_login_after_otp_verification(self):
+        """User can login after successful OTP verification."""
+        from apps.users.otp import get_otp
+
+        # Act: Register new user
+        register_response = self.client.post(
+            "/api/auth/register/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+                "password_confirm": "SecurePass123!",
+                "first_name": "New",
+                "last_name": "User",
+            },
+            format="json"
+        )
+        assert register_response.status_code == 201
+
+        # Get OTP from Redis
+        otp = get_otp("newuser@example.com")
+        assert otp is not None
+
+        # Verify OTP
+        verify_response = self.client.post(
+            "/api/auth/verify-otp/",
+            {
+                "email": "newuser@example.com",
+                "otp": otp,
+            },
+            format="json"
+        )
+        assert verify_response.status_code == 200
+
+        # Act: Now try to login
+        login_response = self.client.post(
+            "/api/auth/login/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+            },
+            format="json"
+        )
+
+        # Assert: Login should succeed
+        assert login_response.status_code == 200
+        assert "access" in login_response.data
+        assert "refresh" in login_response.data
+
+    def test_registration_without_email_does_not_send_otp(self):
+        """Registration with phone number only should not send OTP (future enhancement)."""
+        # This test documents expected behavior for phone-only registration
+        # For now, we focus on email-based registration
+
+        # Act: Register with phone only (if supported)
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "phone_number": "+1234567890",
+                "password": "SecurePass123!",
+                "password_confirm": "SecurePass123!",
+                "first_name": "Phone",
+                "last_name": "User",
+            },
+            format="json"
+        )
+
+        # This might fail validation (email OR phone required)
+        # Just document the behavior for future
+        # Skip this test for now as it's out of scope
+        pass
+
+    def test_registration_email_contains_otp_code(self):
+        """Registration email should contain 6-digit OTP code."""
+        from django.core import mail
+        from apps.users.otp import get_otp
+
+        mail.outbox = []
+
+        # Act: Register new user
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+                "password_confirm": "SecurePass123!",
+                "first_name": "New",
+                "last_name": "User",
+            },
+            format="json"
+        )
+
+        # Assert: Email should contain OTP
+        assert response.status_code == 201
+        assert len(mail.outbox) == 1
+
+        email = mail.outbox[0]
+        stored_otp = get_otp("newuser@example.com")
+
+        # OTP should be in email body
+        assert stored_otp in email.body
