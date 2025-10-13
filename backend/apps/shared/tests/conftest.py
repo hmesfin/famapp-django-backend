@@ -66,7 +66,7 @@ def user(db):
 def admin_user(db):
     """Create an admin user"""
     return User.objects.create_superuser(
-        email="admin@example.com", password="adminpass123"
+        email="admin@example.com", password="adminpass123",
     )
 
 
@@ -79,7 +79,7 @@ def family(db, user):
 
     family = Family.objects.create(name="Test Family", created_by=user)
     FamilyMember.objects.create(
-        family=family, user=user, role=FamilyMember.Role.ORGANIZER
+        family=family, user=user, role=FamilyMember.Role.ORGANIZER,
     )
     return family
 
@@ -101,7 +101,6 @@ def todo(db, user, family):
 @pytest.fixture
 def schedule_event(db, user, family):
     """Create a test schedule event"""
-    from datetime import datetime
     from datetime import timedelta
 
     from django.utils import timezone

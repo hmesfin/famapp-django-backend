@@ -58,7 +58,7 @@ def send_todo_reminders(lead_time_hours=1):
         # For now, just log
         logger.info(
             f"TODO REMINDER: {todo.title} due at {todo.due_date} "
-            f"(family: {todo.family.name})"
+            f"(family: {todo.family.name})",
         )
         reminder_count += 1
 
@@ -96,7 +96,7 @@ def send_event_reminders(lead_time_minutes=15):
         # For now, just log
         logger.info(
             f"EVENT REMINDER: {event.title} starts at {event.start_time} "
-            f"(family: {event.family.name})"
+            f"(family: {event.family.name})",
         )
         reminder_count += 1
 
@@ -138,7 +138,7 @@ def send_pet_feeding_reminders():
             # For now, just log
             logger.info(
                 f"PET FEEDING REMINDER: {pet.name} needs feeding "
-                f"(family: {pet.family.name})"
+                f"(family: {pet.family.name})",
             )
             reminder_count += 1
 
@@ -178,7 +178,7 @@ def send_pet_walking_reminders():
             # For now, just log
             logger.info(
                 f"PET WALKING REMINDER: {pet.name} needs walking "
-                f"(family: {pet.family.name})"
+                f"(family: {pet.family.name})",
             )
             reminder_count += 1
 

@@ -12,7 +12,6 @@ Ham Dog & TC making sure our serializers work correctly! 🚀
 
 import pytest
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
 
 from apps.shared.models import Family
 from apps.shared.models import FamilyMember
@@ -69,7 +68,7 @@ class TestFamilyCreateSerializer:
         from apps.shared.serializers import FamilyCreateSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         serializer = FamilyCreateSerializer(data={"name": "Test Family"})
         assert serializer.is_valid()
@@ -103,12 +102,12 @@ class TestFamilyUpdateSerializer:
         from apps.shared.serializers import FamilyUpdateSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Old Name", created_by=user)
 
         serializer = FamilyUpdateSerializer(
-            instance=family, data={"name": "New Name"}, partial=True
+            instance=family, data={"name": "New Name"}, partial=True,
         )
         assert serializer.is_valid(), serializer.errors
 
@@ -121,12 +120,12 @@ class TestFamilyUpdateSerializer:
         from apps.shared.serializers import FamilyUpdateSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Original Name", created_by=user)
 
         serializer = FamilyUpdateSerializer(
-            instance=family, data={"name": "A" * 101}, partial=True
+            instance=family, data={"name": "A" * 101}, partial=True,
         )
         assert not serializer.is_valid()
         assert "name" in serializer.errors
@@ -146,7 +145,7 @@ class TestFamilySerializer:
         from apps.shared.serializers import FamilySerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
 
@@ -179,7 +178,7 @@ class TestFamilySerializer:
         from apps.shared.serializers import FamilySerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
 
@@ -205,17 +204,17 @@ class TestFamilyDetailSerializer:
 
         # Create family with members
         user1 = User.objects.create_user(
-            email="admin@example.com", password="testpass123"
+            email="admin@example.com", password="testpass123",
         )
         user2 = User.objects.create_user(
-            email="member@example.com", password="testpass123"
+            email="member@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user1)
         FamilyMember.objects.create(
-            family=family, user=user1, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user1, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family, user=user2, role=FamilyMember.Role.PARENT
+            family=family, user=user2, role=FamilyMember.Role.PARENT,
         )
 
         serializer = FamilyDetailSerializer(instance=family)
@@ -236,7 +235,7 @@ class TestFamilyDetailSerializer:
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         serializer = FamilyDetailSerializer(instance=family)
@@ -254,7 +253,7 @@ class TestFamilyDetailSerializer:
         from apps.shared.serializers import FamilyDetailSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Empty Family", created_by=user)
 

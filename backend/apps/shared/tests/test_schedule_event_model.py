@@ -56,7 +56,7 @@ class TestScheduleEventModel:
         # Act & Assert
         with pytest.raises(IntegrityError):
             ScheduleEvent.objects.create(
-                title=None, family=family, start_time=start_time, end_time=end_time
+                title=None, family=family, start_time=start_time, end_time=end_time,
             )
 
     def test_schedule_event_title_max_length_200(self):

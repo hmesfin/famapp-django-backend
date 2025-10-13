@@ -35,28 +35,28 @@ class TestFamilyAccessMixin:
 
         # Create two families with different members
         user1 = User.objects.create_user(
-            email="user1@example.com", password="testpass123"
+            email="user1@example.com", password="testpass123",
         )
         user2 = User.objects.create_user(
-            email="user2@example.com", password="testpass123"
+            email="user2@example.com", password="testpass123",
         )
 
         family1 = Family.objects.create(name="Family 1", created_by=user1)
         family2 = Family.objects.create(name="Family 2", created_by=user2)
 
         FamilyMember.objects.create(
-            family=family1, user=user1, role=FamilyMember.Role.ORGANIZER
+            family=family1, user=user1, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family2, user=user2, role=FamilyMember.Role.ORGANIZER
+            family=family2, user=user2, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create todos in each family
         todo1 = Todo.objects.create(
-            family=family1, title="Todo 1", created_by=user1, updated_by=user1
+            family=family1, title="Todo 1", created_by=user1, updated_by=user1,
         )
         todo2 = Todo.objects.create(
-            family=family2, title="Todo 2", created_by=user2, updated_by=user2
+            family=family2, title="Todo 2", created_by=user2, updated_by=user2,
         )
 
         # Create test ViewSet with mixin
@@ -90,16 +90,16 @@ class TestFamilyAccessMixin:
 
         # Create user and family
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create todo
         todo = Todo.objects.create(
-            family=family, title="Test Todo", created_by=user, updated_by=user
+            family=family, title="Test Todo", created_by=user, updated_by=user,
         )
 
         # Create test ViewSet
@@ -139,19 +139,19 @@ class TestFamilyAccessMixin:
 
         # Create user and family
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create two todos
         todo1 = Todo.objects.create(
-            family=family, title="Todo 1", created_by=user, updated_by=user
+            family=family, title="Todo 1", created_by=user, updated_by=user,
         )
         todo2 = Todo.objects.create(
-            family=family, title="Todo 2", created_by=user, updated_by=user
+            family=family, title="Todo 2", created_by=user, updated_by=user,
         )
 
         # Create test ViewSet
@@ -190,19 +190,19 @@ class TestFamilyAccessMixin:
 
         # Create user with no family memberships
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
 
         # Create another user with a family and todo
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
         Todo.objects.create(
-            family=family, title="Test Todo", created_by=owner, updated_by=owner
+            family=family, title="Test Todo", created_by=owner, updated_by=owner,
         )
 
         # Create test ViewSet
@@ -230,7 +230,7 @@ class TestFamilyAccessMixin:
 
         # Create user who belongs to multiple families
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
 
         # Create two families with user as member
@@ -238,18 +238,18 @@ class TestFamilyAccessMixin:
         family2 = Family.objects.create(name="Family 2", created_by=user)
 
         FamilyMember.objects.create(
-            family=family1, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family1, user=user, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family2, user=user, role=FamilyMember.Role.PARENT
+            family=family2, user=user, role=FamilyMember.Role.PARENT,
         )
 
         # Create todos in both families
         todo1 = Todo.objects.create(
-            family=family1, title="Todo 1", created_by=user, updated_by=user
+            family=family1, title="Todo 1", created_by=user, updated_by=user,
         )
         todo2 = Todo.objects.create(
-            family=family2, title="Todo 2", created_by=user, updated_by=user
+            family=family2, title="Todo 2", created_by=user, updated_by=user,
         )
 
         # Create test ViewSet
@@ -279,11 +279,11 @@ class TestFamilyAccessMixin:
 
         # Create user and family
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create todos with different statuses

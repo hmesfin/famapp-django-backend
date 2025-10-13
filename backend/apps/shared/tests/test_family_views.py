@@ -35,7 +35,7 @@ class TestFamilyCreate:
     def test_creates_family_with_authenticated_user_as_organizer(self):
         """Test that creating a family also creates FamilyMember with organizer role."""
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         client = APIClient()
         client.force_authenticate(user=user)
@@ -58,7 +58,7 @@ class TestFamilyCreate:
     def test_returns_201_with_family_data(self):
         """Test that successful creation returns 201 status code."""
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         client = APIClient()
         client.force_authenticate(user=user)
@@ -75,7 +75,7 @@ class TestFamilyCreate:
     def test_validates_family_name_is_required(self):
         """Test that name field is required."""
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         client = APIClient()
         client.force_authenticate(user=user)
@@ -88,7 +88,7 @@ class TestFamilyCreate:
     def test_validates_family_name_not_empty(self):
         """Test that name cannot be empty string."""
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         client = APIClient()
         client.force_authenticate(user=user)
@@ -122,27 +122,27 @@ class TestFamilyList:
     def test_returns_all_families_user_belongs_to(self):
         """Test that list returns only families where user is a member."""
         user = User.objects.create_user(
-            email="member@example.com", password="testpass123"
+            email="member@example.com", password="testpass123",
         )
         other_user = User.objects.create_user(
-            email="other@example.com", password="testpass123"
+            email="other@example.com", password="testpass123",
         )
 
         # Create families for user
         family1 = Family.objects.create(name="User Family 1", created_by=user)
         FamilyMember.objects.create(
-            family=family1, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family1, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         family2 = Family.objects.create(name="User Family 2", created_by=user)
         FamilyMember.objects.create(
-            family=family2, user=user, role=FamilyMember.Role.PARENT
+            family=family2, user=user, role=FamilyMember.Role.PARENT,
         )
 
         # Create family for other user (should not appear in results)
         other_family = Family.objects.create(name="Other Family", created_by=other_user)
         FamilyMember.objects.create(
-            family=other_family, user=other_user, role=FamilyMember.Role.ORGANIZER
+            family=other_family, user=other_user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client = APIClient()
@@ -160,18 +160,18 @@ class TestFamilyList:
     def test_includes_member_count_for_each_family(self):
         """Test that each family includes member_count annotation."""
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         other_user = User.objects.create_user(
-            email="other@example.com", password="testpass123"
+            email="other@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family, user=other_user, role=FamilyMember.Role.PARENT
+            family=family, user=other_user, role=FamilyMember.Role.PARENT,
         )
 
         client = APIClient()
@@ -187,7 +187,7 @@ class TestFamilyList:
     def test_returns_empty_list_if_user_has_no_families(self):
         """Test that users with no family memberships get empty list."""
         user = User.objects.create_user(
-            email="loner@example.com", password="testpass123"
+            email="loner@example.com", password="testpass123",
         )
 
         client = APIClient()
@@ -222,11 +222,11 @@ class TestFamilyRetrieve:
     def test_returns_family_details_with_members(self):
         """Test that retrieve returns detailed family information."""
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client = APIClient()
@@ -256,10 +256,10 @@ class TestFamilyRetrieve:
 
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family, user=member, role=FamilyMember.Role.PARENT
+            family=family, user=member, role=FamilyMember.Role.PARENT,
         )
 
         client = APIClient()
@@ -280,15 +280,15 @@ class TestFamilyRetrieve:
     def test_returns_403_if_user_not_a_member(self):
         """Test that non-members cannot access family details."""
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         outsider = User.objects.create_user(
-            email="outsider@example.com", password="testpass123"
+            email="outsider@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Private Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         client = APIClient()
@@ -303,7 +303,7 @@ class TestFamilyRetrieve:
         import uuid
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
 
         client = APIClient()
@@ -330,18 +330,18 @@ class TestFamilyUpdate:
     def test_updates_family_name_as_organizer(self):
         """Test that organizer can update family name."""
         user = User.objects.create_user(
-            email="admin@example.com", password="testpass123"
+            email="admin@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Old Name", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client = APIClient()
         client.force_authenticate(user=user)
 
         response = client.patch(
-            f"/api/v1/families/{family.public_id}/", {"name": "New Name"}
+            f"/api/v1/families/{family.public_id}/", {"name": "New Name"},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -355,25 +355,25 @@ class TestFamilyUpdate:
     def test_returns_403_if_user_not_organizer(self):
         """Test that regular members cannot update family."""
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         member = User.objects.create_user(
-            email="member@example.com", password="testpass123"
+            email="member@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family, user=member, role=FamilyMember.Role.PARENT
+            family=family, user=member, role=FamilyMember.Role.PARENT,
         )
 
         client = APIClient()
         client.force_authenticate(user=member)
 
         response = client.patch(
-            f"/api/v1/families/{family.public_id}/", {"name": "Hacked Name"}
+            f"/api/v1/families/{family.public_id}/", {"name": "Hacked Name"},
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -381,22 +381,22 @@ class TestFamilyUpdate:
     def test_returns_403_if_user_not_a_member(self):
         """Test that outsiders cannot update family."""
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         outsider = User.objects.create_user(
-            email="outsider@example.com", password="testpass123"
+            email="outsider@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         client = APIClient()
         client.force_authenticate(user=outsider)
 
         response = client.patch(
-            f"/api/v1/families/{family.public_id}/", {"name": "Hacked Name"}
+            f"/api/v1/families/{family.public_id}/", {"name": "Hacked Name"},
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -404,11 +404,11 @@ class TestFamilyUpdate:
     def test_allows_partial_updates(self):
         """Test that PATCH allows partial updates."""
         user = User.objects.create_user(
-            email="admin@example.com", password="testpass123"
+            email="admin@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Old Name", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client = APIClient()
@@ -416,7 +416,7 @@ class TestFamilyUpdate:
 
         # Update only name, other fields should remain unchanged
         response = client.patch(
-            f"/api/v1/families/{family.public_id}/", {"name": "Partial Update"}
+            f"/api/v1/families/{family.public_id}/", {"name": "Partial Update"},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -438,11 +438,11 @@ class TestFamilyDelete:
     def test_soft_deletes_family_as_organizer(self):
         """Test that organizer can soft delete family."""
         user = User.objects.create_user(
-            email="admin@example.com", password="testpass123"
+            email="admin@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Doomed Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client = APIClient()
@@ -460,18 +460,18 @@ class TestFamilyDelete:
     def test_returns_403_if_user_not_organizer(self):
         """Test that regular members cannot delete family."""
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         member = User.objects.create_user(
-            email="member@example.com", password="testpass123"
+            email="member@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family, user=member, role=FamilyMember.Role.PARENT
+            family=family, user=member, role=FamilyMember.Role.PARENT,
         )
 
         client = APIClient()
@@ -488,15 +488,15 @@ class TestFamilyDelete:
     def test_returns_403_if_user_not_a_member(self):
         """Test that outsiders cannot delete family."""
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         outsider = User.objects.create_user(
-            email="outsider@example.com", password="testpass123"
+            email="outsider@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         client = APIClient()

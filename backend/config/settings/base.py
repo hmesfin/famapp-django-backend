@@ -342,8 +342,8 @@ SPECTACULAR_SETTINGS = {
                 "type": "http",
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
-            }
-        }
+            },
+        },
     },
     "SECURITY": [{"jwtAuth": []}],
     # Component settings

@@ -116,7 +116,7 @@ class TestPetModel:
 
         # Act
         pet = Pet.objects.create(
-            name="Whiskers", family=family, species=Pet.Species.CAT
+            name="Whiskers", family=family, species=Pet.Species.CAT,
         )
 
         # Assert
@@ -248,7 +248,7 @@ class TestPetModel:
 
         # Act
         pet = Pet.objects.create(
-            name="Buddy", family=family, notes="Allergic to chicken, needs daily walks"
+            name="Buddy", family=family, notes="Allergic to chicken, needs daily walks",
         )
 
         # Assert

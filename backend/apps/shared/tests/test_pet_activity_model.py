@@ -56,7 +56,7 @@ class TestPetActivityModel:
         # Act & Assert
         with pytest.raises(IntegrityError):
             PetActivity.objects.create(
-                activity_type=None, scheduled_time=scheduled_time, pet=pet
+                activity_type=None, scheduled_time=scheduled_time, pet=pet,
             )
 
     def test_pet_activity_scheduled_time_is_required(self):

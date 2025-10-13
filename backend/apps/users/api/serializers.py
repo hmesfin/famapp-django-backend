@@ -25,7 +25,7 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
         style={"input_type": "password"},
     )
     password_confirm = serializers.CharField(
-        write_only=True, style={"input_type": "password"}
+        write_only=True, style={"input_type": "password"},
     )
 
     class Meta:

@@ -40,7 +40,7 @@ class IsFamilyMember(permissions.BasePermission):
         # Get family_public_id from view kwargs (for nested routes)
         # or public_id (for direct family routes)
         family_public_id = view.kwargs.get("family_public_id") or view.kwargs.get(
-            "public_id"
+            "public_id",
         )
         if not family_public_id:
             # No family specified in URL, allow the check to proceed
@@ -51,7 +51,7 @@ class IsFamilyMember(permissions.BasePermission):
         try:
             family = Family.objects.get(public_id=family_public_id)
             return FamilyMember.objects.filter(
-                family=family, user=request.user
+                family=family, user=request.user,
             ).exists()
         except Family.DoesNotExist:
             # Return True to let the view handle the 404
@@ -75,7 +75,7 @@ class IsFamilyMember(permissions.BasePermission):
         # If obj has a 'family' attribute, check membership in that family
         if hasattr(obj, "family"):
             return FamilyMember.objects.filter(
-                family=obj.family, user=request.user
+                family=obj.family, user=request.user,
             ).exists()
 
         # Default to deny if we can't determine the family
@@ -110,7 +110,7 @@ class IsFamilyAdmin(permissions.BasePermission):
         # Get family_public_id from view kwargs (for nested routes)
         # or public_id (for direct family routes)
         family_public_id = view.kwargs.get("family_public_id") or view.kwargs.get(
-            "public_id"
+            "public_id",
         )
         if not family_public_id:
             # No family specified in URL, allow the check to proceed
@@ -121,7 +121,7 @@ class IsFamilyAdmin(permissions.BasePermission):
         try:
             family = Family.objects.get(public_id=family_public_id)
             return FamilyMember.objects.filter(
-                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
+                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER,
             ).exists()
         except Family.DoesNotExist:
             # Return True to let the view handle the 404
@@ -141,13 +141,13 @@ class IsFamilyAdmin(permissions.BasePermission):
         # If obj is a Family, check organizer role
         if isinstance(obj, Family):
             return FamilyMember.objects.filter(
-                family=obj, user=request.user, role=FamilyMember.Role.ORGANIZER
+                family=obj, user=request.user, role=FamilyMember.Role.ORGANIZER,
             ).exists()
 
         # If obj has a 'family' attribute, check organizer role in that family
         if hasattr(obj, "family"):
             return FamilyMember.objects.filter(
-                family=obj.family, user=request.user, role=FamilyMember.Role.ORGANIZER
+                family=obj.family, user=request.user, role=FamilyMember.Role.ORGANIZER,
             ).exists()
 
         # Default to deny if we can't determine the family

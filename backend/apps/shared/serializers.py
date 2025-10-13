@@ -156,7 +156,7 @@ class InviteMemberSerializer(serializers.Serializer):
 
     email = serializers.EmailField(required=True)
     role = serializers.ChoiceField(
-        choices=FamilyMember.Role.choices, default=FamilyMember.Role.PARENT
+        choices=FamilyMember.Role.choices, default=FamilyMember.Role.PARENT,
     )
 
     def validate_email(self, value):
@@ -195,7 +195,7 @@ class TodoCreateSerializer(serializers.ModelSerializer):
 
     family_public_id = serializers.UUIDField(write_only=True)
     assigned_to_public_id = serializers.UUIDField(
-        write_only=True, required=False, allow_null=True
+        write_only=True, required=False, allow_null=True,
     )
 
     class Meta:
@@ -239,10 +239,10 @@ class TodoCreateSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request and request.user:
             if not FamilyMember.objects.filter(
-                family=family, user=request.user
+                family=family, user=request.user,
             ).exists():
                 raise serializers.ValidationError(
-                    "You must be a member of this family to create todos."
+                    "You must be a member of this family to create todos.",
                 )
 
         return value
@@ -371,7 +371,6 @@ class TodoToggleSerializer(serializers.Serializer):
     The toggle logic is handled in the view.
     """
 
-    pass
 
 
 # ============================================================================
@@ -394,7 +393,7 @@ class EventCreateSerializer(serializers.ModelSerializer):
 
     family_public_id = serializers.UUIDField(write_only=True)
     assigned_to_public_id = serializers.UUIDField(
-        write_only=True, required=False, allow_null=True
+        write_only=True, required=False, allow_null=True,
     )
 
     class Meta:
@@ -421,10 +420,10 @@ class EventCreateSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request and request.user:
             if not FamilyMember.objects.filter(
-                family=family, user=request.user
+                family=family, user=request.user,
             ).exists():
                 raise serializers.ValidationError(
-                    "You must be a member of this family to create events."
+                    "You must be a member of this family to create events.",
                 )
 
         return value
@@ -445,7 +444,7 @@ class EventCreateSerializer(serializers.ModelSerializer):
 
         if start_time and end_time and end_time <= start_time:
             raise serializers.ValidationError(
-                {"end_time": "End time must be after start time."}
+                {"end_time": "End time must be after start time."},
             )
 
         return data
@@ -498,7 +497,7 @@ class EventUpdateSerializer(serializers.ModelSerializer):
 
         if start_time and end_time and end_time <= start_time:
             raise serializers.ValidationError(
-                {"end_time": "End time must be after start time."}
+                {"end_time": "End time must be after start time."},
             )
 
         return data
@@ -586,10 +585,10 @@ class GroceryCreateSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request and request.user:
             if not FamilyMember.objects.filter(
-                family=family, user=request.user
+                family=family, user=request.user,
             ).exists():
                 raise serializers.ValidationError(
-                    "You must be a member of this family to create grocery items."
+                    "You must be a member of this family to create grocery items.",
                 )
 
         return value
@@ -695,10 +694,10 @@ class PetCreateSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request and request.user:
             if not FamilyMember.objects.filter(
-                family=family, user=request.user
+                family=family, user=request.user,
             ).exists():
                 raise serializers.ValidationError(
-                    "You must be a member of this family to create pets."
+                    "You must be a member of this family to create pets.",
                 )
 
         return value

@@ -118,7 +118,7 @@ class TestGroceryItemModel:
 
         # Act
         item = GroceryItem.objects.create(
-            name="Milk", family=family, quantity=2, unit="gallons"
+            name="Milk", family=family, quantity=2, unit="gallons",
         )
 
         # Assert
@@ -175,7 +175,7 @@ class TestGroceryItemModel:
 
         # Act
         item = GroceryItem.objects.create(
-            name="Apples", family=family, category=GroceryItem.Category.PRODUCE
+            name="Apples", family=family, category=GroceryItem.Category.PRODUCE,
         )
 
         # Assert
@@ -191,7 +191,7 @@ class TestGroceryItemModel:
 
         # Act
         item = GroceryItem.objects.create(
-            name="Milk", family=family, category=GroceryItem.Category.DAIRY
+            name="Milk", family=family, category=GroceryItem.Category.DAIRY,
         )
 
         # Assert
@@ -207,7 +207,7 @@ class TestGroceryItemModel:
 
         # Act
         item = GroceryItem.objects.create(
-            name="Chicken", family=family, category=GroceryItem.Category.MEAT
+            name="Chicken", family=family, category=GroceryItem.Category.MEAT,
         )
 
         # Assert
@@ -223,7 +223,7 @@ class TestGroceryItemModel:
 
         # Act
         item = GroceryItem.objects.create(
-            name="Bread", family=family, category=GroceryItem.Category.BAKERY
+            name="Bread", family=family, category=GroceryItem.Category.BAKERY,
         )
 
         # Assert
@@ -239,7 +239,7 @@ class TestGroceryItemModel:
 
         # Act
         item = GroceryItem.objects.create(
-            name="Rice", family=family, category=GroceryItem.Category.PANTRY
+            name="Rice", family=family, category=GroceryItem.Category.PANTRY,
         )
 
         # Assert
@@ -255,7 +255,7 @@ class TestGroceryItemModel:
 
         # Act
         item = GroceryItem.objects.create(
-            name="Ice Cream", family=family, category=GroceryItem.Category.FROZEN
+            name="Ice Cream", family=family, category=GroceryItem.Category.FROZEN,
         )
 
         # Assert

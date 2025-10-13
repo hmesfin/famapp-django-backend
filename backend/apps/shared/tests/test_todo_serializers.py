@@ -46,7 +46,7 @@ class TestTodoCreateSerializer:
 
         past_date = timezone.now() - timedelta(days=1)
         serializer = TodoCreateSerializer(
-            data={"title": "Test Todo", "due_date": past_date}
+            data={"title": "Test Todo", "due_date": past_date},
         )
         assert not serializer.is_valid()
         assert "due_date" in serializer.errors
@@ -57,11 +57,11 @@ class TestTodoCreateSerializer:
 
         # Create a family for the test
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         future_date = timezone.now() + timedelta(days=1)
@@ -94,7 +94,7 @@ class TestTodoUpdateSerializer:
         from apps.shared.serializers import TodoUpdateSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         todo = Todo.objects.create(title="Old Title", family=family, created_by=user)
@@ -120,7 +120,7 @@ class TestTodoSerializer:
         from apps.shared.serializers import TodoSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         todo = Todo.objects.create(title="Test Todo", family=family, created_by=user)
@@ -142,11 +142,11 @@ class TestTodoSerializer:
         from apps.shared.serializers import TodoSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         todo = Todo.objects.create(
-            title="Test Todo", family=family, created_by=user, due_date=None
+            title="Test Todo", family=family, created_by=user, due_date=None,
         )
 
         serializer = TodoSerializer(instance=todo)
@@ -157,7 +157,7 @@ class TestTodoSerializer:
         from apps.shared.serializers import TodoSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         past_date = timezone.now() - timedelta(days=1)
@@ -177,7 +177,7 @@ class TestTodoSerializer:
         from apps.shared.serializers import TodoSerializer
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         past_date = timezone.now() - timedelta(days=1)

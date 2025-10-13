@@ -133,7 +133,7 @@ class TestTodoModel:
 
         # Act
         todo = Todo.objects.create(
-            title="Buy groceries", family=family, status=Todo.Status.IN_PROGRESS
+            title="Buy groceries", family=family, status=Todo.Status.IN_PROGRESS,
         )
 
         # Assert
@@ -149,7 +149,7 @@ class TestTodoModel:
 
         # Act
         todo = Todo.objects.create(
-            title="Buy groceries", family=family, status=Todo.Status.DONE
+            title="Buy groceries", family=family, status=Todo.Status.DONE,
         )
 
         # Assert
@@ -189,7 +189,7 @@ class TestTodoModel:
 
         # Act
         todo = Todo.objects.create(
-            title="Buy groceries", family=family, priority=Todo.Priority.LOW
+            title="Buy groceries", family=family, priority=Todo.Priority.LOW,
         )
 
         # Assert
@@ -205,7 +205,7 @@ class TestTodoModel:
 
         # Act
         todo = Todo.objects.create(
-            title="Buy groceries", family=family, priority=Todo.Priority.HIGH
+            title="Buy groceries", family=family, priority=Todo.Priority.HIGH,
         )
 
         # Assert
@@ -236,7 +236,7 @@ class TestTodoModel:
 
         # Act
         todo = Todo.objects.create(
-            title="Buy groceries", family=family, due_date=due_date
+            title="Buy groceries", family=family, due_date=due_date,
         )
 
         # Assert
@@ -267,7 +267,7 @@ class TestTodoModel:
 
         # Act
         todo = Todo.objects.create(
-            title="Buy groceries", family=family, assigned_to=user
+            title="Buy groceries", family=family, assigned_to=user,
         )
 
         # Assert
@@ -281,7 +281,7 @@ class TestTodoModel:
         # Arrange
         family = Family.objects.create(name="Smith Family")
         todo = Todo.objects.create(
-            title="Buy groceries", family=family, assigned_to=user
+            title="Buy groceries", family=family, assigned_to=user,
         )
         assert todo.assigned_to == user
 
@@ -318,7 +318,7 @@ class TestTodoModel:
 
         # Act
         todo = Todo.objects.create(
-            title="Buy groceries", family=family, created_by=user
+            title="Buy groceries", family=family, created_by=user,
         )
 
         # Assert

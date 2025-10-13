@@ -37,9 +37,9 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         users = User.objects.filter(
             Q(email__icontains=query)
             | Q(first_name__icontains=query)
-            | Q(last_name__icontains=query)
+            | Q(last_name__icontains=query),
         ).exclude(
-            public_id=request.user.public_id  # Exclude current user
+            public_id=request.user.public_id,  # Exclude current user
         )[:10]  # Limit to 10 results
 
         serializer = UserSerializer(users, many=True, context={"request": request})

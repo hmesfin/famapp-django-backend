@@ -167,8 +167,8 @@ class TestURLSecurity:
     from django.conf import settings
 
     assert "rest_framework_simplejwt.authentication.JWTAuthentication" in str(
-      settings.REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"]
+      settings.REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"],
     )
     assert "rest_framework.permissions.IsAuthenticated" in str(
-      settings.REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"]
+      settings.REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"],
     )

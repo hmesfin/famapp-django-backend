@@ -9,7 +9,6 @@ Following the Ten Commandments:
 
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 
@@ -53,10 +52,10 @@ class TimestampedMixin(models.Model):
     """
 
     created_at = models.DateTimeField(
-        auto_now_add=True, help_text="When this record was first created"
+        auto_now_add=True, help_text="When this record was first created",
     )
     updated_at = models.DateTimeField(
-        auto_now=True, help_text="When this record was last updated"
+        auto_now=True, help_text="When this record was last updated",
     )
 
     class Meta:
@@ -107,7 +106,7 @@ class SoftDeleteMixin(models.Model):
         help_text="Soft delete flag - if True, record is considered deleted",
     )
     deleted_at = models.DateTimeField(
-        null=True, blank=True, help_text="When this record was soft deleted"
+        null=True, blank=True, help_text="When this record was soft deleted",
     )
     deleted_by = models.ForeignKey(
         "users.User",
@@ -213,7 +212,7 @@ class Family(BaseModel):
 
     # ManyToMany relationship with User through FamilyMember
     members = models.ManyToManyField(
-        "users.User", through="FamilyMember", related_name="families"
+        "users.User", through="FamilyMember", related_name="families",
     )
 
     class Meta:
@@ -239,10 +238,10 @@ class FamilyMember(SimpleBaseModel):
         CHILD = "child", "Child"
 
     family = models.ForeignKey(
-        Family, on_delete=models.CASCADE, help_text="Family this member belongs to"
+        Family, on_delete=models.CASCADE, help_text="Family this member belongs to",
     )
     user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, help_text="User who is a family member"
+        "users.User", on_delete=models.CASCADE, help_text="User who is a family member",
     )
     role = models.CharField(
         max_length=20,
@@ -294,7 +293,7 @@ class Todo(BaseModel):
         help_text="Todo priority",
     )
     due_date = models.DateTimeField(
-        null=True, blank=True, help_text="Due date for the todo"
+        null=True, blank=True, help_text="Due date for the todo",
     )
     assigned_to = models.ForeignKey(
         "users.User",
@@ -305,7 +304,7 @@ class Todo(BaseModel):
         help_text="User assigned to this todo",
     )
     family = models.ForeignKey(
-        Family, on_delete=models.CASCADE, help_text="Family this todo belongs to"
+        Family, on_delete=models.CASCADE, help_text="Family this todo belongs to",
     )
 
     class Meta:
@@ -351,7 +350,7 @@ class ScheduleEvent(BaseModel):
         help_text="User assigned to this event",
     )
     family = models.ForeignKey(
-        Family, on_delete=models.CASCADE, help_text="Family this event belongs to"
+        Family, on_delete=models.CASCADE, help_text="Family this event belongs to",
     )
 
     class Meta:
@@ -383,7 +382,7 @@ class GroceryItem(BaseModel):
     name = models.CharField(max_length=200, help_text="Item name")
     quantity = models.IntegerField(default=1, help_text="Quantity to purchase")
     unit = models.CharField(
-        max_length=50, blank=True, help_text="Unit of measurement (e.g., lbs, dozen)"
+        max_length=50, blank=True, help_text="Unit of measurement (e.g., lbs, dozen)",
     )
     category = models.CharField(
         max_length=20,
@@ -392,7 +391,7 @@ class GroceryItem(BaseModel):
         help_text="Grocery category",
     )
     is_purchased = models.BooleanField(
-        default=False, help_text="Whether the item has been purchased"
+        default=False, help_text="Whether the item has been purchased",
     )
     added_by = models.ForeignKey(
         "users.User",
@@ -403,7 +402,7 @@ class GroceryItem(BaseModel):
         help_text="User who added this item",
     )
     family = models.ForeignKey(
-        Family, on_delete=models.CASCADE, help_text="Family this item belongs to"
+        Family, on_delete=models.CASCADE, help_text="Family this item belongs to",
     )
 
     class Meta:
@@ -441,7 +440,7 @@ class Pet(BaseModel):
     age = models.IntegerField(null=True, blank=True, help_text="Pet age in years")
     notes = models.TextField(blank=True, help_text="Additional pet notes")
     family = models.ForeignKey(
-        Family, on_delete=models.CASCADE, help_text="Family this pet belongs to"
+        Family, on_delete=models.CASCADE, help_text="Family this pet belongs to",
     )
 
     class Meta:
@@ -478,10 +477,10 @@ class PetActivity(BaseModel):
     scheduled_time = models.DateTimeField(help_text="When this activity is scheduled")
     notes = models.TextField(blank=True, help_text="Activity notes")
     is_completed = models.BooleanField(
-        default=False, help_text="Whether the activity has been completed"
+        default=False, help_text="Whether the activity has been completed",
     )
     completed_at = models.DateTimeField(
-        null=True, blank=True, help_text="When this activity was completed"
+        null=True, blank=True, help_text="When this activity was completed",
     )
     completed_by = models.ForeignKey(
         "users.User",
@@ -492,7 +491,7 @@ class PetActivity(BaseModel):
         help_text="User who completed this activity",
     )
     pet = models.ForeignKey(
-        Pet, on_delete=models.CASCADE, help_text="Pet this activity is for"
+        Pet, on_delete=models.CASCADE, help_text="Pet this activity is for",
     )
 
     class Meta:

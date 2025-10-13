@@ -31,20 +31,20 @@ class TestListPets:
         client = APIClient()
 
         user1 = User.objects.create_user(
-            email="user1@example.com", password="testpass123"
+            email="user1@example.com", password="testpass123",
         )
         user2 = User.objects.create_user(
-            email="user2@example.com", password="testpass123"
+            email="user2@example.com", password="testpass123",
         )
 
         family1 = Family.objects.create(name="Family 1", created_by=user1)
         family2 = Family.objects.create(name="Family 2", created_by=user2)
 
         FamilyMember.objects.create(
-            family=family1, user=user1, role=FamilyMember.Role.ORGANIZER
+            family=family1, user=user1, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family2, user=user2, role=FamilyMember.Role.ORGANIZER
+            family=family2, user=user2, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet1 = Pet.objects.create(
@@ -72,11 +72,11 @@ class TestListPets:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -107,11 +107,11 @@ class TestCreatePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client.force_authenticate(user=user)
@@ -134,11 +134,11 @@ class TestCreatePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client.force_authenticate(user=user)
@@ -167,11 +167,11 @@ class TestCreatePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client.force_authenticate(user=user)
@@ -196,11 +196,11 @@ class TestRetrievePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -221,15 +221,15 @@ class TestRetrievePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -254,11 +254,11 @@ class TestUpdatePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -287,11 +287,11 @@ class TestUpdatePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -323,11 +323,11 @@ class TestDeletePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -352,11 +352,11 @@ class TestDeletePet:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -387,11 +387,11 @@ class TestLogPetActivity:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -422,11 +422,11 @@ class TestLogPetActivity:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -454,11 +454,11 @@ class TestLogPetActivity:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -488,15 +488,15 @@ class TestLogPetActivity:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -528,11 +528,11 @@ class TestListPetActivities:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -569,11 +569,11 @@ class TestListPetActivities:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -598,7 +598,7 @@ class TestListPetActivities:
 
         client.force_authenticate(user=user)
         response = client.get(
-            f"/api/v1/pets/{pet.public_id}/activities/?activity_type=WALKING"
+            f"/api/v1/pets/{pet.public_id}/activities/?activity_type=WALKING",
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -610,11 +610,11 @@ class TestListPetActivities:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(
@@ -644,15 +644,15 @@ class TestListPetActivities:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         pet = Pet.objects.create(

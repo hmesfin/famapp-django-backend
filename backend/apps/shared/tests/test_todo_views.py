@@ -34,28 +34,28 @@ class TestListTodos:
 
         # Create two users with separate families
         user1 = User.objects.create_user(
-            email="user1@example.com", password="testpass123"
+            email="user1@example.com", password="testpass123",
         )
         user2 = User.objects.create_user(
-            email="user2@example.com", password="testpass123"
+            email="user2@example.com", password="testpass123",
         )
 
         family1 = Family.objects.create(name="Family 1", created_by=user1)
         family2 = Family.objects.create(name="Family 2", created_by=user2)
 
         FamilyMember.objects.create(
-            family=family1, user=user1, role=FamilyMember.Role.ORGANIZER
+            family=family1, user=user1, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family2, user=user2, role=FamilyMember.Role.ORGANIZER
+            family=family2, user=user2, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create todos in each family
         todo1 = Todo.objects.create(
-            family=family1, title="Todo 1", created_by=user1, updated_by=user1
+            family=family1, title="Todo 1", created_by=user1, updated_by=user1,
         )
         Todo.objects.create(
-            family=family2, title="Todo 2", created_by=user2, updated_by=user2
+            family=family2, title="Todo 2", created_by=user2, updated_by=user2,
         )
 
         # User1 should only see todo1
@@ -73,25 +73,25 @@ class TestListTodos:
 
         # Create user who belongs to multiple families
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
 
         family1 = Family.objects.create(name="Family 1", created_by=user)
         family2 = Family.objects.create(name="Family 2", created_by=user)
 
         FamilyMember.objects.create(
-            family=family1, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family1, user=user, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family2, user=user, role=FamilyMember.Role.PARENT
+            family=family2, user=user, role=FamilyMember.Role.PARENT,
         )
 
         # Create todos in both families
         todo1 = Todo.objects.create(
-            family=family1, title="Todo 1", created_by=user, updated_by=user
+            family=family1, title="Todo 1", created_by=user, updated_by=user,
         )
         todo2 = Todo.objects.create(
-            family=family2, title="Todo 2", created_by=user, updated_by=user
+            family=family2, title="Todo 2", created_by=user, updated_by=user,
         )
 
         # User should see both todos
@@ -110,19 +110,19 @@ class TestListTodos:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create two todos
         todo1 = Todo.objects.create(
-            family=family, title="Active Todo", created_by=user, updated_by=user
+            family=family, title="Active Todo", created_by=user, updated_by=user,
         )
         todo2 = Todo.objects.create(
-            family=family, title="Deleted Todo", created_by=user, updated_by=user
+            family=family, title="Deleted Todo", created_by=user, updated_by=user,
         )
 
         # Soft delete todo2
@@ -143,15 +143,15 @@ class TestListTodos:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         Todo.objects.create(
-            family=family, title="Test Todo", created_by=user, updated_by=user
+            family=family, title="Test Todo", created_by=user, updated_by=user,
         )
 
         # Soft delete the family
@@ -171,19 +171,19 @@ class TestListTodos:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
 
         # Create another family with a todo (user not a member)
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
         Todo.objects.create(
-            family=family, title="Test Todo", created_by=owner, updated_by=owner
+            family=family, title="Test Todo", created_by=owner, updated_by=owner,
         )
 
         # User should get empty list
@@ -212,11 +212,11 @@ class TestCreateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client.force_authenticate(user=user)
@@ -238,11 +238,11 @@ class TestCreateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         due_date = timezone.now() + timezone.timedelta(days=7)
@@ -273,11 +273,11 @@ class TestCreateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client.force_authenticate(user=user)
@@ -299,11 +299,11 @@ class TestCreateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         client.force_authenticate(user=user)
@@ -323,7 +323,7 @@ class TestCreateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
 
         client.force_authenticate(user=user)
@@ -340,14 +340,14 @@ class TestCreateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         client.force_authenticate(user=user)
@@ -373,11 +373,11 @@ class TestRetrieveTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
@@ -403,7 +403,7 @@ class TestRetrieveTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
 
         client.force_authenticate(user=user)
@@ -416,19 +416,19 @@ class TestRetrieveTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
-            family=family, title="Test Todo", created_by=owner, updated_by=owner
+            family=family, title="Test Todo", created_by=owner, updated_by=owner,
         )
 
         # User (not a member) should get 404
@@ -449,15 +449,15 @@ class TestUpdateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
-            family=family, title="Original Title", created_by=user, updated_by=user
+            family=family, title="Original Title", created_by=user, updated_by=user,
         )
 
         client.force_authenticate(user=user)
@@ -481,11 +481,11 @@ class TestUpdateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
@@ -512,15 +512,15 @@ class TestUpdateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
-            family=family, title="Test Todo", created_by=user, updated_by=user
+            family=family, title="Test Todo", created_by=user, updated_by=user,
         )
 
         client.force_authenticate(user=user)
@@ -541,19 +541,19 @@ class TestUpdateTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
-            family=family, title="Test Todo", created_by=owner, updated_by=owner
+            family=family, title="Test Todo", created_by=owner, updated_by=owner,
         )
 
         # User (not a member) should get 404
@@ -578,11 +578,11 @@ class TestToggleTodoCompletion:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
@@ -608,11 +608,11 @@ class TestToggleTodoCompletion:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
@@ -638,19 +638,19 @@ class TestToggleTodoCompletion:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
-            family=family, title="Test Todo", created_by=owner, updated_by=owner
+            family=family, title="Test Todo", created_by=owner, updated_by=owner,
         )
 
         # User (not a member) should get 404
@@ -671,15 +671,15 @@ class TestDeleteTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
-            family=family, title="Test Todo", created_by=user, updated_by=user
+            family=family, title="Test Todo", created_by=user, updated_by=user,
         )
 
         client.force_authenticate(user=user)
@@ -697,15 +697,15 @@ class TestDeleteTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
-            family=family, title="Test Todo", created_by=user, updated_by=user
+            family=family, title="Test Todo", created_by=user, updated_by=user,
         )
 
         client.force_authenticate(user=user)
@@ -724,19 +724,19 @@ class TestDeleteTodo:
         client = APIClient()
 
         user = User.objects.create_user(
-            email="user@example.com", password="testpass123"
+            email="user@example.com", password="testpass123",
         )
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
 
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         todo = Todo.objects.create(
-            family=family, title="Test Todo", created_by=owner, updated_by=owner
+            family=family, title="Test Todo", created_by=owner, updated_by=owner,
         )
 
         # User (not a member) should get 404

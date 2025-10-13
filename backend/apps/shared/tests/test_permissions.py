@@ -33,11 +33,11 @@ class TestIsFamilyMemberPermission:
 
         # Create family and users
         user = User.objects.create_user(
-            email="member@example.com", password="testpass123"
+            email="member@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.PARENT
+            family=family, user=user, role=FamilyMember.Role.PARENT,
         )
 
         # Create mock request with family in view kwargs
@@ -59,14 +59,14 @@ class TestIsFamilyMemberPermission:
 
         # Create family and users
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         outsider = User.objects.create_user(
-            email="outsider@example.com", password="testpass123"
+            email="outsider@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create mock request with outsider user
@@ -89,7 +89,7 @@ class TestIsFamilyMemberPermission:
         from apps.shared.permissions import IsFamilyMember
 
         user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123",
         )
 
         # Create mock request with non-existent family
@@ -113,11 +113,11 @@ class TestIsFamilyMemberPermission:
 
         # Create family and users
         user = User.objects.create_user(
-            email="member@example.com", password="testpass123"
+            email="member@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.PARENT
+            family=family, user=user, role=FamilyMember.Role.PARENT,
         )
 
         # Create mock request
@@ -138,14 +138,14 @@ class TestIsFamilyMemberPermission:
 
         # Create family and users
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         outsider = User.objects.create_user(
-            email="outsider@example.com", password="testpass123"
+            email="outsider@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create mock request with outsider
@@ -176,11 +176,11 @@ class TestIsFamilyAdminPermission:
 
         # Create family with organizer
         user = User.objects.create_user(
-            email="admin@example.com", password="testpass123"
+            email="admin@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create mock request
@@ -202,17 +202,17 @@ class TestIsFamilyAdminPermission:
 
         # Create family with parent (not organizer)
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         parent = User.objects.create_user(
-            email="parent@example.com", password="testpass123"
+            email="parent@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family, user=parent, role=FamilyMember.Role.PARENT
+            family=family, user=parent, role=FamilyMember.Role.PARENT,
         )
 
         # Create mock request with parent user
@@ -234,14 +234,14 @@ class TestIsFamilyAdminPermission:
 
         # Create family and outsider
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         outsider = User.objects.create_user(
-            email="outsider@example.com", password="testpass123"
+            email="outsider@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create mock request with outsider
@@ -263,11 +263,11 @@ class TestIsFamilyAdminPermission:
 
         # Create family with organizer
         user = User.objects.create_user(
-            email="admin@example.com", password="testpass123"
+            email="admin@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=user)
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Create mock request
@@ -288,17 +288,17 @@ class TestIsFamilyAdminPermission:
 
         # Create family with parent (not organizer)
         owner = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
+            email="owner@example.com", password="testpass123",
         )
         parent = User.objects.create_user(
-            email="parent@example.com", password="testpass123"
+            email="parent@example.com", password="testpass123",
         )
         family = Family.objects.create(name="Test Family", created_by=owner)
         FamilyMember.objects.create(
-            family=family, user=owner, role=FamilyMember.Role.ORGANIZER
+            family=family, user=owner, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family, user=parent, role=FamilyMember.Role.PARENT
+            family=family, user=parent, role=FamilyMember.Role.PARENT,
         )
 
         # Create mock request with parent

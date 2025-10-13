@@ -127,7 +127,7 @@ class TestFamilyMemberModel:
 
         # Act
         member = FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.PARENT
+            family=family, user=user, role=FamilyMember.Role.PARENT,
         )
 
         # Assert
@@ -168,13 +168,13 @@ class TestFamilyMemberModel:
         # Arrange
         family = Family.objects.create(name="Smith Family")
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Act & Assert
         with pytest.raises(IntegrityError):
             FamilyMember.objects.create(
-                family=family, user=user, role=FamilyMember.Role.PARENT
+                family=family, user=user, role=FamilyMember.Role.PARENT,
             )
 
     def test_family_member_role_enum_organizer(self, user):
@@ -187,7 +187,7 @@ class TestFamilyMemberModel:
 
         # Act
         member = FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Assert
@@ -203,7 +203,7 @@ class TestFamilyMemberModel:
 
         # Act
         member = FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.PARENT
+            family=family, user=user, role=FamilyMember.Role.PARENT,
         )
 
         # Assert
@@ -219,7 +219,7 @@ class TestFamilyMemberModel:
 
         # Act
         member = FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.CHILD
+            family=family, user=user, role=FamilyMember.Role.CHILD,
         )
 
         # Assert
@@ -261,7 +261,7 @@ class TestFamilyMemberModel:
         # Arrange
         family = Family.objects.create(name="Smith Family")
         member = FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Act
@@ -295,7 +295,7 @@ class TestFamilyMemberModel:
         # Arrange
         family = Family.objects.create(name="Smith Family")
         FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user, role=FamilyMember.Role.ORGANIZER,
         )
 
         # Act
@@ -333,10 +333,10 @@ class TestFamilyMemberModel:
 
         # Act
         FamilyMember.objects.create(
-            family=family, user=user1, role=FamilyMember.Role.ORGANIZER
+            family=family, user=user1, role=FamilyMember.Role.ORGANIZER,
         )
         FamilyMember.objects.create(
-            family=family, user=user2, role=FamilyMember.Role.PARENT
+            family=family, user=user2, role=FamilyMember.Role.PARENT,
         )
 
         # Assert
@@ -350,7 +350,7 @@ class TestFamilyMemberModel:
         # Arrange
         family = Family.objects.create(name="Smith Family")
         member = FamilyMember.objects.create(
-            family=family, user=user, role=FamilyMember.Role.CHILD
+            family=family, user=user, role=FamilyMember.Role.CHILD,
         )
 
         # Act

@@ -55,12 +55,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise serializers.ValidationError(
                 {
                     "non_field_errors": [
-                        "Email verification required. We've sent you a new verification link."
+                        "Email verification required. We've sent you a new verification link.",
                     ],
                     "requires_email_verification": True,
                     "email": user.email,
                     "email_sent": email_sent,
-                }
+                },
             )
 
         # Add user data to response
@@ -175,10 +175,9 @@ def logout(request):
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                {"error": "Refresh token required"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(
+            {"error": "Refresh token required"}, status=status.HTTP_400_BAD_REQUEST,
+        )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -225,13 +224,12 @@ def auth_check(request):
             },
             status=status.HTTP_200_OK,
         )
-    else:
-        return Response(
-            {
-                "authenticated": False,
-            },
-            status=status.HTTP_200_OK,
-        )
+    return Response(
+        {
+            "authenticated": False,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(["POST"])
@@ -250,7 +248,7 @@ def forgot_password(request):
     email = request.data.get("email")
     if not email:
         return Response(
-            {"error": "Email address is required"}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "Email address is required"}, status=status.HTTP_400_BAD_REQUEST,
         )
 
     # Check if user exists
@@ -260,7 +258,7 @@ def forgot_password(request):
         # For security, don't reveal if email exists or not
         return Response(
             {
-                "message": "If an account with this email exists, you will receive a password reset link."
+                "message": "If an account with this email exists, you will receive a password reset link.",
             },
             status=status.HTTP_200_OK,
         )
@@ -279,7 +277,7 @@ def forgot_password(request):
 
     return Response(
         {
-            "message": "If an account with this email exists, you will receive a password reset link."
+            "message": "If an account with this email exists, you will receive a password reset link.",
         },
         status=status.HTTP_200_OK,
     )
@@ -310,12 +308,12 @@ def reset_password_confirm(request):
 
     if not all([token, uid, password, password_confirm]):
         return Response(
-            {"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST,
         )
 
     if password != password_confirm:
         return Response(
-            {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST,
         )
 
     try:
@@ -324,7 +322,7 @@ def reset_password_confirm(request):
         user = User.objects.get(pk=user_id)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         return Response(
-            {"error": "Invalid reset link"}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "Invalid reset link"}, status=status.HTTP_400_BAD_REQUEST,
         )
 
     # Check if token is valid
@@ -336,18 +334,17 @@ def reset_password_confirm(request):
 
     # Set the new password
     form = SetPasswordForm(
-        user, {"new_password1": password, "new_password2": password_confirm}
+        user, {"new_password1": password, "new_password2": password_confirm},
     )
     if form.is_valid():
         form.save()
         return Response(
             {
-                "message": "Password has been reset successfully. You can now log in with your new password."
+                "message": "Password has been reset successfully. You can now log in with your new password.",
             },
             status=status.HTTP_200_OK,
         )
-    else:
-        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
@@ -381,7 +378,7 @@ def verify_email(request):
             raise BadSignature("Invalid token format")
 
         parts = original_value.split(
-            "_", 2
+            "_", 2,
         )  # Split into ['email', 'verify', '{pk}_{email}']
         if len(parts) != 3:
             raise BadSignature("Invalid token format")
@@ -458,7 +455,7 @@ def resend_verification_email(request):
     email = request.data.get("email")
     if not email:
         return Response(
-            {"error": "Email address is required"}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "Email address is required"}, status=status.HTTP_400_BAD_REQUEST,
         )
 
     try:
@@ -489,7 +486,7 @@ def resend_verification_email(request):
         # For security, don't reveal if email exists or not
         return Response(
             {
-                "message": "If an account with this email exists, you will receive a verification email."
+                "message": "If an account with this email exists, you will receive a verification email.",
             },
             status=status.HTTP_200_OK,
         )

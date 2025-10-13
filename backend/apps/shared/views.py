@@ -12,8 +12,6 @@ Ham Dog & TC building family collaboration APIs! 🚀
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count
-from django.db.models import OuterRef
-from django.db.models import Subquery
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -95,9 +93,7 @@ class FamilyViewSet(viewsets.ModelViewSet):
         - retrieve: IsFamilyMember (view-level check)
         - update/partial_update/destroy: IsFamilyAdmin (organizers only)
         """
-        if self.action == "create":
-            permission_classes = [IsAuthenticated]
-        elif self.action in ["list"]:
+        if self.action == "create" or self.action in ["list"]:
             permission_classes = [IsAuthenticated]
         elif self.action in ["retrieve"]:
             permission_classes = [IsAuthenticated, IsFamilyMember]
@@ -124,7 +120,7 @@ class FamilyViewSet(viewsets.ModelViewSet):
             # First get families where user is a member
             # Then annotate with member count (separate from the filter)
             user_family_ids = FamilyMember.objects.filter(user=user).values_list(
-                "family_id", flat=True
+                "family_id", flat=True,
             )
             return (
                 Family.objects.filter(id__in=user_family_ids, is_deleted=False)
@@ -151,12 +147,11 @@ class FamilyViewSet(viewsets.ModelViewSet):
         """
         if self.action == "create":
             return FamilyCreateSerializer
-        elif self.action in ["update", "partial_update"]:
+        if self.action in ["update", "partial_update"]:
             return FamilyUpdateSerializer
-        elif self.action == "retrieve":
+        if self.action == "retrieve":
             return FamilyDetailSerializer
-        else:
-            return FamilySerializer
+        return FamilySerializer
 
     def create(self, request, *args, **kwargs):
         """
@@ -174,7 +169,7 @@ class FamilyViewSet(viewsets.ModelViewSet):
         output_serializer = FamilySerializer(family)
         headers = self.get_success_headers(output_serializer.data)
         return Response(
-            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers,
         )
 
     def perform_create(self, serializer):
@@ -190,12 +185,12 @@ class FamilyViewSet(viewsets.ModelViewSet):
         - role: ORGANIZER
         """
         family = serializer.save(
-            created_by=self.request.user, updated_by=self.request.user
+            created_by=self.request.user, updated_by=self.request.user,
         )
 
         # Automatically add creator as organizer
         FamilyMember.objects.create(
-            family=family, user=self.request.user, role=FamilyMember.Role.ORGANIZER
+            family=family, user=self.request.user, role=FamilyMember.Role.ORGANIZER,
         )
 
     def perform_update(self, serializer):
@@ -257,7 +252,7 @@ class FamilyViewSet(viewsets.ModelViewSet):
             # List members - any family member can view
             # Check permission manually
             if not FamilyMember.objects.filter(
-                family=family, user=request.user
+                family=family, user=request.user,
             ).exists():
                 return Response(
                     {"detail": "You must be a family member to access this resource."},
@@ -268,15 +263,15 @@ class FamilyViewSet(viewsets.ModelViewSet):
             serializer = MemberSerializer(members, many=True)
             return Response(serializer.data)
 
-        elif request.method == "POST":
+        if request.method == "POST":
             # Invite member - organizers only
             # Check permission manually
             if not FamilyMember.objects.filter(
-                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
+                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER,
             ).exists():
                 return Response(
                     {
-                        "detail": "You must be a family organizer to perform this action."
+                        "detail": "You must be a family organizer to perform this action.",
                     },
                     status=status.HTTP_403_FORBIDDEN,
                 )
@@ -305,7 +300,7 @@ class FamilyViewSet(viewsets.ModelViewSet):
 
             # Create membership
             membership = FamilyMember.objects.create(
-                family=family, user=user, role=role
+                family=family, user=user, role=role,
             )
 
             # Return member data
@@ -335,11 +330,11 @@ class FamilyViewSet(viewsets.ModelViewSet):
         if request.method == "PATCH":
             # Update member role - organizers only
             if not FamilyMember.objects.filter(
-                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
+                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER,
             ).exists():
                 return Response(
                     {
-                        "detail": "You must be a family organizer to perform this action."
+                        "detail": "You must be a family organizer to perform this action.",
                     },
                     status=status.HTTP_403_FORBIDDEN,
                 )
@@ -354,11 +349,11 @@ class FamilyViewSet(viewsets.ModelViewSet):
             output_serializer = MemberSerializer(membership)
             return Response(output_serializer.data)
 
-        elif request.method == "DELETE":
+        if request.method == "DELETE":
             # Remove member
             # Allow if: (1) user is organizer OR (2) user is removing themselves
             is_organizer = FamilyMember.objects.filter(
-                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
+                family=family, user=request.user, role=FamilyMember.Role.ORGANIZER,
             ).exists()
             is_self_removal = user == request.user
 
@@ -417,10 +412,9 @@ class TodoViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         """
         if self.action == "create":
             return TodoCreateSerializer
-        elif self.action in ["update", "partial_update"]:
+        if self.action in ["update", "partial_update"]:
             return TodoUpdateSerializer
-        else:
-            return TodoSerializer
+        return TodoSerializer
 
     def create(self, request, *args, **kwargs):
         """
@@ -438,7 +432,7 @@ class TodoViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         output_serializer = TodoSerializer(todo)
         headers = self.get_success_headers(output_serializer.data)
         return Response(
-            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers,
         )
 
     def perform_create(self, serializer):
@@ -530,10 +524,9 @@ class ScheduleEventViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         """
         if self.action == "create":
             return EventCreateSerializer
-        elif self.action in ["update", "partial_update"]:
+        if self.action in ["update", "partial_update"]:
             return EventUpdateSerializer
-        else:
-            return EventSerializer
+        return EventSerializer
 
     def create(self, request, *args, **kwargs):
         """
@@ -551,7 +544,7 @@ class ScheduleEventViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         output_serializer = EventSerializer(event)
         headers = self.get_success_headers(output_serializer.data)
         return Response(
-            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers,
         )
 
     def perform_create(self, serializer):
@@ -622,10 +615,9 @@ class GroceryItemViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         """
         if self.action == "create":
             return GroceryCreateSerializer
-        elif self.action in ["update", "partial_update"]:
+        if self.action in ["update", "partial_update"]:
             return GroceryUpdateSerializer
-        else:
-            return GrocerySerializer
+        return GrocerySerializer
 
     def create(self, request, *args, **kwargs):
         """
@@ -643,7 +635,7 @@ class GroceryItemViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         output_serializer = GrocerySerializer(item)
         headers = self.get_success_headers(output_serializer.data)
         return Response(
-            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers,
         )
 
     def perform_create(self, serializer):
@@ -728,14 +720,13 @@ class PetViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         """
         if self.action == "create":
             return PetCreateSerializer
-        elif self.action in ["update", "partial_update"]:
+        if self.action in ["update", "partial_update"]:
             return PetUpdateSerializer
-        elif self.action == "activities" and self.request.method == "POST":
+        if self.action == "activities" and self.request.method == "POST":
             return PetActivityCreateSerializer
-        elif self.action == "activities" and self.request.method == "GET":
+        if self.action == "activities" and self.request.method == "GET":
             return PetActivitySerializer
-        else:
-            return PetSerializer
+        return PetSerializer
 
     def create(self, request, *args, **kwargs):
         """
@@ -753,7 +744,7 @@ class PetViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
         output_serializer = PetSerializer(pet)
         headers = self.get_success_headers(output_serializer.data)
         return Response(
-            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            output_serializer.data, status=status.HTTP_201_CREATED, headers=headers,
         )
 
     def perform_create(self, serializer):
@@ -806,7 +797,7 @@ class PetViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
 
             # Create activity linked to this pet
             activity = serializer.save(
-                pet=pet, created_by=request.user, updated_by=request.user
+                pet=pet, created_by=request.user, updated_by=request.user,
             )
 
             # If is_completed=True, set completed_by to current user
@@ -818,10 +809,10 @@ class PetViewSet(FamilyAccessMixin, viewsets.ModelViewSet):
             output_serializer = PetActivitySerializer(activity)
             return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == "GET":
+        if request.method == "GET":
             # List activities
             queryset = PetActivity.objects.filter(pet=pet, is_deleted=False).order_by(
-                "-scheduled_time"
+                "-scheduled_time",
             )
 
             # Filter by activity_type if provided
