@@ -272,7 +272,7 @@ class InvitationViewSet(ViewSet):
         if invitation.is_expired:
             return Response(
                 {
-                    "detail": "This invitation has expired. Please create a new invitation."
+                    "detail": "This invitation has expired. Please create a new invitation.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -283,19 +283,29 @@ class InvitationViewSet(ViewSet):
             from django.core.mail import send_mail
             from django.template.loader import render_to_string
 
+            # Build context matching the format used by send_invitation_email Celery task
             context = {
-                "invitation": invitation,
-                "family": invitation.family,
-                "inviter": invitation.created_by,
-                "invitee_email": invitation.invitee_email,
+                "inviter_name": invitation.created_by.get_full_name()
+                or invitation.created_by.email,
+                "family_name": invitation.family.name,
                 "role": invitation.get_role_display(),
-                "invitation_url": f"{settings.FRONTEND_URL}/invite/{invitation.token}",
-                "expiration_days": 7,
+                "invitation_token": str(invitation.token),
+                "expires_at": invitation.expires_at,
+                "invitee_email": invitation.invitee_email,
             }
 
-            subject = f"Invitation to join {invitation.family.name} on FamApp"
-            html_message = render_to_string("emails/family_invitation.html", context)
-            plain_message = render_to_string("emails/family_invitation.txt", context)
+            # Build accept/decline URLs (frontend URLs)
+            frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+            context["accept_url"] = (
+                f"{frontend_url}/invitations/{invitation.token}/accept"
+            )
+            context["decline_url"] = (
+                f"{frontend_url}/invitations/{invitation.token}/decline"
+            )
+
+            subject = f"You're invited to join {invitation.family.name} on FamApp!"
+            html_message = render_to_string("emails/invitation.html", context)
+            plain_message = render_to_string("emails/invitation.txt", context)
 
             send_mail(
                 subject=subject,
@@ -307,7 +317,7 @@ class InvitationViewSet(ViewSet):
             )
 
             logger.info(
-                f"Invitation resent to {invitation.invitee_email} for family {invitation.family.name}"
+                f"Invitation resent to {invitation.invitee_email} for family {invitation.family.name}",
             )
 
             return Response(
@@ -320,7 +330,7 @@ class InvitationViewSet(ViewSet):
 
         except Exception as e:
             logger.error(
-                f"Failed to resend invitation to {invitation.invitee_email}: {e}"
+                f"Failed to resend invitation to {invitation.invitee_email}: {e}",
             )
             return Response(
                 {
@@ -354,7 +364,6 @@ class InvitationViewSet(ViewSet):
         """
         import logging
 
-        from apps.shared.models import Family
 
         logger = logging.getLogger(__name__)
 
@@ -457,7 +466,7 @@ class InvitationViewSet(ViewSet):
             if was_sole_organizer:
                 current_family.delete()
                 logger.info(
-                    f"Deleted family {current_family.name} as user {request.user.email} was sole member"
+                    f"Deleted family {current_family.name} as user {request.user.email} was sole member",
                 )
 
             # Create new membership in invited family
@@ -473,7 +482,7 @@ class InvitationViewSet(ViewSet):
             invitation.save()
 
             logger.info(
-                f"User {request.user.email} switched from family to {invitation.family.name}"
+                f"User {request.user.email} switched from family to {invitation.family.name}",
             )
 
         # Return new family data
