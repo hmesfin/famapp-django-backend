@@ -23,6 +23,47 @@ from .serializers import UserCreateSerializer
 User = get_user_model()
 
 
+def get_user_data_with_role(user):
+    """
+    Get user data including their family role.
+
+    Since we enforce one-user-one-family, we can include the role directly.
+    Returns None for role if user has no family membership.
+    """
+    from apps.shared.models import FamilyMember
+
+    # Get user's family membership (should be only one)
+    membership = FamilyMember.objects.filter(user=user).select_related("family").first()
+
+    user_data = {
+        "id": user.pk,
+        "public_id": str(user.public_id),
+        "email": user.email,
+        "phone_number": user.phone_number if hasattr(user, "phone_number") else None,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "is_active": user.is_active,
+        "email_verified": user.email_verified
+        if hasattr(user, "email_verified")
+        else True,
+        "date_joined": user.date_joined,
+        "last_login": user.last_login,
+    }
+
+    # Add role and family info if user has membership
+    if membership:
+        user_data["role"] = membership.role
+        user_data["family"] = {
+            "public_id": str(membership.family.public_id),
+            "name": membership.family.name,
+        }
+    else:
+        user_data["role"] = None
+        user_data["family"] = None
+
+    return user_data
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Custom JWT serializer that uses email instead of username.
@@ -79,22 +120,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 },
             )
 
-        # Add user data to response
-        user_data = {
-            "id": user.pk,
-            "public_id": str(user.public_id),
-            "email": user.email,
-            "phone_number": user.phone_number
-            if hasattr(user, "phone_number")
-            else None,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "is_active": user.is_active,
-            "date_joined": user.date_joined,
-            "last_login": user.last_login,
-        }
-
-        data["user"] = user_data
+        # Add user data with role to response
+        data["user"] = get_user_data_with_role(user)
 
         return data
 
@@ -277,26 +304,13 @@ def logout(request):
 @api_view(["GET"])
 def user_profile(request):
     """
-    Get current user's profile.
+    Get current user's profile including family role.
 
     Requires authentication.
     """
-    user = request.user
-
-    user_data = {
-        "id": user.pk,
-        "public_id": str(user.public_id),
-        "email": user.email,
-        "phone_number": user.phone_number if hasattr(user, "phone_number") else None,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "is_active": user.is_active,
-        "email_verified": user.email_verified,
-        "date_joined": user.date_joined,
-        "last_login": user.last_login,
-    }
-
-    return Response({"user": user_data}, status=status.HTTP_200_OK)
+    return Response(
+        {"user": get_user_data_with_role(request.user)}, status=status.HTTP_200_OK
+    )
 
 
 @api_view(["GET"])
