@@ -61,6 +61,8 @@ class InvitationViewSet(ViewSet):
     - DELETE /api/v1/invitations/{token}/ - Cancel invitation (organizers only)
     - POST /api/v1/invitations/{token}/accept/ - Accept invitation (invitee only)
     - POST /api/v1/invitations/{token}/decline/ - Decline invitation (invitee only)
+    - POST /api/v1/invitations/{token}/resend/ - Resend invitation email (organizers only)
+    - POST /api/v1/invitations/{token}/switch-family/ - Switch families (existing users)
     """
 
     permission_classes = [IsAuthenticated]
@@ -226,6 +228,107 @@ class InvitationViewSet(ViewSet):
             {"detail": "Invitation declined successfully."},
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["post"])
+    def resend(self, request, token=None):
+        """
+        POST /api/v1/invitations/{token}/resend/ - Resend invitation email.
+
+        Re-sends the invitation email to the invitee.
+        Only ORGANIZER of the invitation's family can resend.
+        Invitation must be in PENDING status and not expired.
+        """
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        # Get invitation by token
+        invitation = get_object_or_404(Invitation, token=token)
+
+        # Check permission: only ORGANIZER can resend
+        is_organizer = FamilyMember.objects.filter(
+            family=invitation.family,
+            user=request.user,
+            role=FamilyMember.Role.ORGANIZER,
+        ).exists()
+
+        if not is_organizer:
+            return Response(
+                {"detail": "You must be a family organizer to perform this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Check status is PENDING
+        if invitation.status != Invitation.Status.PENDING:
+            return Response(
+                {
+                    "detail": f"Cannot resend invitation with status '{invitation.status}'. "
+                    "Only pending invitations can be resent.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check not expired
+        if invitation.is_expired:
+            return Response(
+                {
+                    "detail": "This invitation has expired. Please create a new invitation."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Send invitation email
+        try:
+            from django.conf import settings
+            from django.core.mail import send_mail
+            from django.template.loader import render_to_string
+
+            context = {
+                "invitation": invitation,
+                "family": invitation.family,
+                "inviter": invitation.created_by,
+                "invitee_email": invitation.invitee_email,
+                "role": invitation.get_role_display(),
+                "invitation_url": f"{settings.FRONTEND_URL}/invite/{invitation.token}",
+                "expiration_days": 7,
+            }
+
+            subject = f"Invitation to join {invitation.family.name} on FamApp"
+            html_message = render_to_string("emails/family_invitation.html", context)
+            plain_message = render_to_string("emails/family_invitation.txt", context)
+
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[invitation.invitee_email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+
+            logger.info(
+                f"Invitation resent to {invitation.invitee_email} for family {invitation.family.name}"
+            )
+
+            return Response(
+                {
+                    "detail": "Invitation email resent successfully.",
+                    "invitee_email": invitation.invitee_email,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            logger.error(
+                f"Failed to resend invitation to {invitation.invitee_email}: {e}"
+            )
+            return Response(
+                {
+                    "detail": "Failed to send invitation email. Please try again later.",
+                    "error": str(e),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @action(detail=True, methods=["post"], url_path="switch-family")
     def switch_family(self, request, token=None):
