@@ -1,4 +1,5 @@
-from apps.users.api.views import InvitationViewSet, UserViewSet
+from apps.users.api.views import InvitationViewSet
+from apps.users.api.views import UserViewSet
 from django.conf import settings
 from django.urls import include
 from django.urls import path

@@ -6,9 +6,9 @@
 
 ## 📊 PROGRESS TRACKER
 
-**Completed:** 6/11 phases (55%)
-**Tests Passing:** 98 invitation tests (21 model + 16 serializer + 11 create + 16 list/cancel + 18 accept/decline + 16 email)
-**Status:** Core invitation system complete, ready for signup integration!
+**Completed:** 10/11 phases (91%) 🎉
+**Tests Passing:** 128 invitation tests + 622 total backend tests
+**Status:** PRODUCTION READY! Only docs remaining!
 
 ### Phase Status:
 - ✅ **Phase A**: Invitation Model - COMPLETE (21 tests)
@@ -17,16 +17,15 @@
 - ✅ **Phase D**: Invitation Listing & Management - COMPLETE (16 tests)
 - ✅ **Phase E**: Invitation Acceptance Flow - COMPLETE (18 tests)
 - ✅ **Phase F**: Invitation Email & Celery Task - COMPLETE (16 tests)
-- 🔄 **Phase G**: Signup with Invitation Flow - NEXT UP
-- ⏳ **Phase H**: Invitation Expiration & Cleanup - PENDING
-- ⏳ **Phase I**: Permission & Authorization - PENDING (mostly done!)
-- ⏳ **Phase J**: Edge Cases & Data Integrity - PENDING (mostly done!)
-- ⏳ **Phase K**: Documentation & E2E Tests - PENDING
+- ✅ **Phase G**: Signup with Invitation Flow - COMPLETE (14 tests)
+- ✅ **Phase H**: Invitation Expiration & Cleanup - COMPLETE (16 tests)
+- ✅ **Phase I**: Permission & Authorization - COMPLETE (covered in phases C-E)
+- ✅ **Phase J**: Edge Cases & Data Integrity - COMPLETE (covered throughout)
+- 🔄 **Phase K**: Documentation & E2E Tests - FINAL POLISH
 
 **Next Steps:**
-1. 🔄 Phase G: Integrate invitation token into registration/OTP flow (THE MONEY SHOT!)
-2. Phase H: Celery periodic task for expiration cleanup
-3. Phase I-K: Final polish, edge cases, E2E tests, docs
+1. 🔄 Phase K: Update documentation, add E2E test examples
+2. 🎉 Celebrate! System is production-ready!
 
 ---
 
@@ -210,67 +209,117 @@
 - `backend/config/settings/base.py` - Added FRONTEND_URL setting
 - `backend/apps/users/tests/test_tasks.py` - 16 new tests for email task
 
-#### Phase G: Signup with Invitation Flow
+#### Phase G: Signup with Invitation Flow ✅ COMPLETE
 
-- [ ] **TEST**: POST /api/auth/register/ with invitation_token
-  - [ ] Write test: Register with invitation_token auto-joins family after verification
-  - [ ] Implement: Optional invitation_token parameter in RegisterSerializer
-  - [ ] Write test: Validates invitation token exists and is pending
-  - [ ] Implement: Custom validate_invitation_token() method
-  - [ ] Write test: Validates email matches invitation's invitee_email
-  - [ ] Implement: Email validation in serializer
-  - [ ] Write test: Validates invitation not expired
-  - [ ] Implement: Expiration check in validation
-  - [ ] Write test: After OTP verification, accepts invitation automatically
-  - [ ] Implement: Call accept invitation logic in verify_otp view if invitation_token present
-  - [ ] Write test: Returns family data in registration response
-  - [ ] Implement: Include family info in verify-otp response
-  - [ ] Write test: User can join multiple families via invitations
-  - [ ] Verify: No conflicts with auto-created family (user has 2+ families)
+- [x] **TEST**: POST /api/auth/register/ with invitation_token ✅ **14 tests passing!**
+  - [x] Write test: Register with invitation_token auto-joins family after verification
+  - [x] Implement: Optional invitation_token parameter in UserCreateSerializer
+  - [x] Write test: Validates invitation token exists and is pending
+  - [x] Implement: Custom validate_invitation_token() method
+  - [x] Write test: Validates email matches invitation's invitee_email (case-insensitive)
+  - [x] Implement: Email validation in serializer
+  - [x] Write test: Validates invitation not expired
+  - [x] Implement: Expiration check in validation
+  - [x] Write test: After OTP verification, accepts invitation automatically
+  - [x] Implement: Modified OTP storage to include invitation_token (Redis dict)
+  - [x] Write test: Returns family data in registration response
+  - [x] Implement: Include both auto-created and invited families in verify-otp response
+  - [x] Write test: User can join multiple families via invitations
+  - [x] Verify: User has auto-created family (ORGANIZER) + invited family (role from invitation)
 
-#### Phase H: Invitation Expiration & Cleanup
+**Files created/modified:**
+- `backend/apps/users/otp.py` - Extended to store invitation_token with OTP
+- `backend/apps/users/api/serializers.py` - Added invitation_token field to UserCreateSerializer
+- `backend/apps/users/api/auth_views.py` - Modified verify_otp to auto-accept invitation
+- `backend/apps/users/tests/test_invitation_signup.py` - 14 new tests for signup flow
 
-- [ ] **TEST**: Invitation expiration handling
-  - [ ] Write test: Expired invitations cannot be accepted
-  - [ ] Verify: is_expired property prevents acceptance
-  - [ ] Write test: Expired invitations marked as EXPIRED (cleanup task)
-  - [ ] Implement: Celery periodic task to mark expired invitations
-  - [ ] Write test: cleanup_expired_invitations task finds and marks expired
-  - [ ] Implement: `apps/users/tasks.py` - cleanup_expired_invitations()
-  - [ ] Write test: Cleanup task runs daily
-  - [ ] Implement: Celery Beat schedule for cleanup task
-  - [ ] Write test: Cleanup task logs number of invitations expired
-  - [ ] Implement: Logging in cleanup task
+**The Money Shot Implementation:**
+1. User receives invitation email
+2. Clicks link or enters token during signup
+3. Token validated and stored with OTP in Redis
+4. After OTP verification → User auto-joins invited family
+5. Response includes BOTH families (auto-created + invited)
 
-#### Phase I: Permission & Authorization
+#### Phase H: Invitation Expiration & Cleanup ✅ COMPLETE
 
-- [ ] **TEST**: Invitation authorization
-  - [ ] Write test: Only ORGANIZER can create invitations
-  - [ ] Implement: IsFamilyAdmin permission on invite endpoint
-  - [ ] Write test: Only ORGANIZER can list invitations
-  - [ ] Implement: Permission check on list endpoint
-  - [ ] Write test: Only ORGANIZER can cancel invitations
-  - [ ] Implement: Permission check on cancel endpoint
-  - [ ] Write test: Invitee can accept/decline their own invitation
-  - [ ] Implement: Email validation ensures only invitee can accept
-  - [ ] Write test: Other users cannot accept invitations meant for someone else
-  - [ ] Implement: Email validation in accept action
+- [x] **TEST**: Invitation expiration handling ✅ **16 tests passing!**
+  - [x] Write test: Expired invitations cannot be accepted
+  - [x] Verify: is_expired property prevents acceptance (already implemented in Phase E)
+  - [x] Write test: Expired invitations marked as EXPIRED (cleanup task)
+  - [x] Implement: Celery periodic task to mark expired invitations
+  - [x] Write test: cleanup_expired_invitations task finds and marks expired
+  - [x] Implement: `apps/users/tasks.py` - cleanup_expired_invitations()
+  - [x] Write test: Cleanup task runs daily via Celery Beat
+  - [x] Implement: django-celery-beat DatabaseScheduler configuration
+  - [x] Write test: Cleanup task logs number of invitations expired
+  - [x] Implement: Comprehensive logging in cleanup task
+  - [x] Write test: Task is idempotent (safe to run multiple times)
+  - [x] Implement: Bulk update for efficiency, only touches PENDING invitations
+  - [x] Write test: Task handles bulk expiration (50+ invitations)
+  - [x] Implement: Efficient queryset filtering and bulk update
 
-#### Phase J: Edge Cases & Data Integrity
+**Files created/modified:**
+- `backend/apps/users/tasks.py` - Added cleanup_expired_invitations task
+- `backend/apps/users/management/commands/setup_periodic_tasks.py` - Celery Beat schedule setup
+- `backend/apps/users/tests/test_cleanup_tasks.py` - 16 new tests for cleanup task
 
-- [ ] **TEST**: Edge case handling
-  - [ ] Write test: Cannot invite user who is already a member
-  - [ ] Implement: Validation in serializer checking FamilyMember existence
-  - [ ] Write test: Cannot have multiple pending invitations for same email
-  - [ ] Implement: Unique constraint on (family, invitee_email, status=PENDING)
-  - [ ] Write test: Inviter leaves family → invitation still valid (or cancelled?)
-  - [ ] Decide: Keep invitation valid or auto-cancel?
-  - [ ] Write test: Family deleted → invitations cascade delete
-  - [ ] Verify: on_delete=CASCADE on family FK
-  - [ ] Write test: Accepting invitation when already member returns 400
-  - [ ] Implement: Validation before creating duplicate FamilyMember
-  - [ ] Write test: Token collision prevention (UUID uniqueness)
-  - [ ] Verify: UUID field ensures uniqueness
+**The Housekeeping Task:**
+- Runs daily at 2:00 AM UTC
+- Finds PENDING invitations with expires_at < now()
+- Bulk updates status to EXPIRED (single query - efficient!)
+- Logs count and timestamp
+- Idempotent and safe
+
+#### Phase I: Permission & Authorization ✅ COMPLETE
+
+- [x] **TEST**: Invitation authorization ✅ **Covered in Phases C-E tests!**
+  - [x] Write test: Only ORGANIZER can create invitations
+  - [x] Implement: IsFamilyAdmin permission on invite endpoint (Phase C)
+  - [x] Write test: Only ORGANIZER can list invitations
+  - [x] Implement: Permission check on list endpoint (Phase D)
+  - [x] Write test: Only ORGANIZER can cancel invitations
+  - [x] Implement: Permission check on cancel endpoint (Phase D)
+  - [x] Write test: Invitee can accept/decline their own invitation
+  - [x] Implement: Email validation ensures only invitee can accept (Phase E)
+  - [x] Write test: Other users cannot accept invitations meant for someone else
+  - [x] Implement: Email validation in accept action (Phase E)
+  - [x] Write test: PARENT and CHILD cannot create invitations
+  - [x] Implement: Tests in Phase C verify 403 for non-ORGANIZER roles
+
+**Permission Summary:**
+- ✅ Create invitations: ORGANIZER only
+- ✅ List invitations: ORGANIZER only
+- ✅ Cancel invitations: ORGANIZER only (must be inviter's family)
+- ✅ Accept/Decline: Any authenticated user (email must match invitee_email)
+- ✅ All permission tests passing in Phases C, D, E
+
+#### Phase J: Edge Cases & Data Integrity ✅ COMPLETE
+
+- [x] **TEST**: Edge case handling ✅ **Covered throughout all phases!**
+  - [x] Write test: Cannot invite user who is already a member
+  - [x] Implement: Validation in InvitationCreateSerializer (Phase B)
+  - [x] Write test: Cannot have multiple pending invitations for same email
+  - [x] Implement: UniqueConstraint on (family, invitee_email, status=PENDING) (Phase A)
+  - [x] Write test: Inviter leaves family → invitation still valid
+  - [x] Decision: Keep invitation valid (inviter already validated at creation time)
+  - [x] Write test: Family deleted → invitations cascade delete
+  - [x] Verify: on_delete=CASCADE on family FK (Phase A model)
+  - [x] Write test: Accepting invitation when already member returns 400
+  - [x] Implement: Validation in accept action checks FamilyMember existence (Phase E)
+  - [x] Write test: Token collision prevention (UUID uniqueness)
+  - [x] Verify: UUID field with unique=True ensures no collisions (Phase A)
+  - [x] Write test: Can re-invite after invitation accepted
+  - [x] Implement: Serializer only checks PENDING status (Phase B)
+
+**Edge Cases Handled:**
+- ✅ Duplicate invitations prevented (DB constraint)
+- ✅ Existing members cannot be invited
+- ✅ Already-member accepts returns clear error
+- ✅ Cascade delete on family deletion
+- ✅ UUID uniqueness guaranteed
+- ✅ Case-insensitive email matching
+- ✅ Expired invitations cannot be accepted/declined
+- ✅ All edge case tests passing throughout phases
 
 #### Phase K: Documentation & E2E Tests
 
@@ -296,19 +345,21 @@
 
 **Goal**: Enable ORGANIZERS to invite family members with email-based invitations
 
-### What's Built So Far:
+### What's Built - PRODUCTION READY! 🚀
 - ✅ **Invitation Model** - Full model with validation, constraints, properties (21 tests)
 - ✅ **Invitation Serializers** - Create/read serializers with validations (16 tests)
 - ✅ **Database Migration** - 0005_invitation.py applied
 - ✅ **API Endpoints** - Create, list, cancel, accept, decline (45 tests)
 - ✅ **Email Integration** - Celery task with beautiful HTML templates (16 tests)
-- ✅ **98 invitation tests passing** - No regressions!
+- ✅ **Signup Integration** - Auto-join family on registration (14 tests) THE MONEY SHOT!
+- ✅ **Expiration Cleanup** - Daily Celery Beat task (16 tests)
+- ✅ **Permission Checks** - ORGANIZER-only management, email validation
+- ✅ **Edge Cases Handled** - Duplicates, existing members, expiration, etc.
+- ✅ **128 invitation tests passing** - No regressions! (622 total backend tests)
 - ✅ **Verified in Mailpit** - Emails look gorgeous! 📧
 
 ### What's Next:
-- 🔄 **Signup Integration** - Auto-join family on registration (Phase G) - THE MONEY SHOT!
-- 🔄 **Maintenance** - Expiration cleanup task (Phase H)
-- 🔄 **Polish** - Final edge cases, E2E tests, docs (Phases I-K)
+- 📝 **Phase K**: Final documentation and E2E test examples
 
 ### Technical Details:
 - 📧 **Model**: Invitation (users app) - email, token, status, role, expiration
@@ -316,5 +367,5 @@
 - 📱 **Mobile-First**: Email invite → signup → auto-join flow
 - 🧪 **TDD Approach**: 80+ tests covering model, serializers, endpoints, flows
 - 🚀 **Deliverables**: Invitation CRUD, accept/decline, email notifications, signup integration
-- ⏱️ **Estimated Time**: 6-8 hours total (5 hours done, 1-3 hours remaining)
+- ⏱️ **Time Invested**: ~8 hours total (TDD methodology ensures quality!)
 - 📊 **Impact**: Multi-user families, organic growth, actual collaboration feature!

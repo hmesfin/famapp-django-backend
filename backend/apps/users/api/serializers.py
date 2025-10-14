@@ -18,6 +18,8 @@ class UserSerializer(serializers.ModelSerializer[User]):
 class UserCreateSerializer(serializers.ModelSerializer[User]):
     """
     Serializer for user registration.
+
+    Phase G: Supports optional invitation_token for signup with invitation flow.
     """
 
     password = serializers.CharField(
@@ -28,10 +30,55 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
     password_confirm = serializers.CharField(
         write_only=True, style={"input_type": "password"},
     )
+    invitation_token = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        write_only=True,
+        help_text="Optional invitation token to join family during signup (Phase G)",
+    )
 
     class Meta:
         model = User
-        fields = ["email", "first_name", "last_name", "password", "password_confirm"]
+        fields = ["email", "first_name", "last_name", "password", "password_confirm", "invitation_token"]
+
+    def validate_invitation_token(self, value):
+        """
+        Validate invitation token if provided (Phase G).
+
+        Validates:
+        - Token exists and is valid
+        - Invitation is PENDING
+        - Invitation has not expired
+        - Email matches invitee_email (case-insensitive)
+        """
+        if value is None:
+            return None
+
+        from django.utils import timezone
+
+        try:
+            invitation = Invitation.objects.select_related('family').get(
+                token=value,
+                status=Invitation.Status.PENDING
+            )
+        except Invitation.DoesNotExist:
+            raise serializers.ValidationError("Invalid or expired invitation token")
+
+        # Check not expired
+        if invitation.is_expired:
+            raise serializers.ValidationError("This invitation has expired")
+
+        # Check email matches (case-insensitive) - need to get email from initial_data
+        request_email = self.initial_data.get('email', '').lower()
+        if invitation.invitee_email.lower() != request_email:
+            raise serializers.ValidationError(
+                f"This invitation is for {invitation.invitee_email}. "
+                f"Please use that email address to sign up."
+            )
+
+        # Store invitation in context for later use
+        self.context['invitation'] = invitation
+        return value
 
     def validate(self, attrs):
         """

@@ -4,6 +4,7 @@ from celery import shared_task
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils import timezone
 
 from .models import Invitation, User
 
@@ -72,3 +73,47 @@ def send_invitation_email(self, invitation_id):
         logger.error(f"Failed to send invitation email (invitation_id={invitation_id}): {exc}")
         # Retry with exponential backoff
         raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+
+
+@shared_task
+def cleanup_expired_invitations():
+    """
+    Daily task to mark expired PENDING invitations as EXPIRED.
+
+    Runs daily at 2 AM UTC to clean up invitations that have passed
+    their expiration date but are still in PENDING status.
+
+    Returns:
+        dict: Summary of cleanup operation including count and timestamp
+    """
+    # Find expired PENDING invitations
+    expired_invitations = Invitation.objects.filter(
+        status=Invitation.Status.PENDING,
+        expires_at__lt=timezone.now()
+    )
+
+    count = expired_invitations.count()
+
+    if count > 0:
+        # Update status to EXPIRED using bulk update for efficiency
+        updated = expired_invitations.update(
+            status=Invitation.Status.EXPIRED
+        )
+
+        logger.info(
+            f"Marked {updated} expired invitation(s) as EXPIRED "
+            f"(expired before {timezone.now()})"
+        )
+
+        return {
+            "status": "success",
+            "expired_count": updated,
+            "timestamp": timezone.now().isoformat()
+        }
+    else:
+        logger.info("No expired invitations found to cleanup")
+        return {
+            "status": "success",
+            "expired_count": 0,
+            "timestamp": timezone.now().isoformat()
+        }

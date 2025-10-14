@@ -9,6 +9,7 @@ Following the Ten Commandments:
 """
 
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
@@ -100,6 +101,7 @@ def register(request):
     Register a new user with email or phone number.
 
     Phase E: Registration Flow Integration with OTP
+    Phase G: Support invitation_token for signup with invitation flow
 
     Expected payload:
     {
@@ -107,13 +109,15 @@ def register(request):
         "phone_number": "+1234567890",  # Required OR email
         "password": "secure_password",
         "first_name": "John",
-        "last_name": "User"
+        "last_name": "User",
+        "invitation_token": "uuid"  # Optional (Phase G)
     }
 
     Flow:
     1. Create user with email_verified=False
     2. Send OTP verification email (if email provided)
-    3. Return user info (tokens on login only after OTP verification)
+    3. Store invitation_token in OTP cache (if provided)
+    4. Return user info (tokens on login only after OTP verification)
 
     Success Response (201):
     {
@@ -138,11 +142,59 @@ def register(request):
         user.email_verified = False
         user.save()
 
+        # Get invitation_token if provided (Phase G)
+        invitation_token = serializer.validated_data.get('invitation_token')
+
         # Send OTP email if email provided (Phase E Integration)
+        # Store invitation_token with OTP (Phase G)
         email_sent = False
         if user.email:
-            result = send_otp_email(user)
-            email_sent = result["success"]
+            from apps.users.otp import generate_otp, store_otp
+
+            # Generate OTP
+            otp = generate_otp()
+
+            # Store OTP with invitation_token
+            store_otp(
+                user.email,
+                otp,
+                invitation_token=str(invitation_token) if invitation_token else None
+            )
+
+            # Send OTP email
+            from django.conf import settings
+            from django.core.mail import send_mail
+            from django.template.loader import render_to_string
+            import logging
+
+            logger = logging.getLogger(__name__)
+
+            try:
+                context = {
+                    "user": user,
+                    "otp": otp,
+                    "expiration_minutes": 10,
+                    "app_name": "FamApp",
+                }
+
+                subject = "FamApp - Your Verification Code"
+                html_message = render_to_string("emails/otp_verification_email.html", context)
+                plain_message = render_to_string("emails/otp_verification_email.txt", context)
+
+                send_mail(
+                    subject=subject,
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+
+                logger.info(f"OTP email sent successfully to {user.email}")
+                email_sent = True
+            except Exception as e:
+                logger.error(f"Failed to send OTP email to {user.email}: {e}")
+                email_sent = False
 
         # Prepare user data (no tokens until login)
         user_data = {
@@ -517,6 +569,7 @@ def verify_otp(request):
     Verify OTP code and return JWT tokens.
 
     Phase C: OTP Verification Endpoint
+    Phase G: Auto-join invited family after OTP verification
 
     Expected payload:
     {
@@ -533,7 +586,11 @@ def verify_otp(request):
             "first_name": "John",
             "last_name": "Doe",
             "email_verified": true
-        }
+        },
+        "families": [
+            {"public_id": "uuid", "name": "John's Family", "role": "organizer"},
+            {"public_id": "uuid2", "name": "Invited Family", "role": "parent"}
+        ]
     }
 
     Error Responses (400):
@@ -542,7 +599,9 @@ def verify_otp(request):
     - Missing OTP: {"error": "No OTP code found for this email"}
     """
     import logging
-    from apps.users.otp import get_otp, delete_otp
+    from apps.users.otp import get_otp, get_invitation_token, delete_otp
+    from apps.users.models import Invitation
+    from apps.shared.models import FamilyMember
 
     logger = logging.getLogger(__name__)
 
@@ -579,36 +638,104 @@ def verify_otp(request):
         user.email_verified = True
         user.save()
 
+        # Get invitation_token from Redis (Phase G)
+        invitation_token_str = get_invitation_token(email)
+
         # Delete OTP (one-time use)
         delete_otp(email)
 
-        # Auto-create family for new user (Enhancement 2)
+        families_data = []
+
+        # IMPORTANT: Auto-create family for new user FIRST (Enhancement 2)
+        # This ensures user always gets their own family with ORGANIZER role
         from apps.shared.services import create_family_for_user
         family, family_member = create_family_for_user(user)
+
+        # Add auto-created family to response
+        auto_family_data = {
+            "public_id": str(family.public_id),
+            "name": family.name,
+            "role": family_member.role,
+        }
+        families_data.append(auto_family_data)
+
+        # Phase G: Check for invitation and auto-join invited family (AFTER auto-create)
+        invited_family_data = None
+        if invitation_token_str:
+            try:
+                import uuid
+                invitation_token = uuid.UUID(invitation_token_str)
+
+                invitation = Invitation.objects.select_related('family').get(
+                    token=invitation_token,
+                    status=Invitation.Status.PENDING,
+                    invitee_email__iexact=user.email
+                )
+
+                # Check if invitation is still valid (not expired)
+                if not invitation.is_expired:
+                    # Accept invitation atomically
+                    with transaction.atomic():
+                        # Create FamilyMember
+                        invited_member = FamilyMember.objects.create(
+                            user=user,
+                            family=invitation.family,
+                            role=invitation.role,
+                        )
+
+                        # Mark invitation as accepted
+                        invitation.status = Invitation.Status.ACCEPTED
+                        invitation.updated_by = user
+                        invitation.save()
+
+                    # Add invited family to response (at the beginning for priority)
+                    invited_family_data = {
+                        "public_id": str(invitation.family.public_id),
+                        "name": invitation.family.name,
+                        "role": invited_member.role,
+                    }
+                    # Insert at beginning so invited family comes first in list
+                    families_data.insert(0, invited_family_data)
+
+                    logger.info(
+                        f"User {email} accepted invitation and joined family {invitation.family.name}"
+                    )
+                else:
+                    logger.warning(
+                        f"Invitation {invitation_token} expired during signup for {email}"
+                    )
+
+            except (Invitation.DoesNotExist, ValueError) as e:
+                # Invitation not found or invalid - continue with normal flow
+                logger.warning(
+                    f"Invitation token {invitation_token_str} not found or invalid for {email}: {e}"
+                )
 
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
 
         logger.info(f"OTP verified successfully for {email}")
 
-        return Response(
-            {
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "user": {
-                    "email": user.email,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email_verified": user.email_verified,
-                },
-                "family": {
-                    "public_id": str(family.public_id),
-                    "name": family.name,
-                    "role": family_member.role,
-                },
+        response_data = {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email_verified": user.email_verified,
             },
-            status=status.HTTP_200_OK,
-        )
+            "families": families_data,
+        }
+
+        # Backward compatibility: include single "family" field for auto-created family
+        response_data["family"] = auto_family_data
+
+        # Include invited_family separately if exists
+        if invited_family_data:
+            response_data["invited_family"] = invited_family_data
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
     except User.DoesNotExist:
         return Response(

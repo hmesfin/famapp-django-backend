@@ -63,9 +63,9 @@ class TestOTPStorage:
         result = store_otp(email, otp)
 
         assert result is True
-        # Verify it's actually in Redis using Django cache
+        # Verify it's actually in Redis using Django cache (Phase G: now stores as dict)
         stored_value = cache.get(f"otp:{email}")
-        assert stored_value == otp
+        assert stored_value == {"otp": otp, "invitation_token": None}
 
     def test_store_otp_with_custom_timeout(self):
         """OTP should accept custom timeout values."""
@@ -78,7 +78,7 @@ class TestOTPStorage:
 
         assert result is True
         stored_value = cache.get(f"otp:{email}")
-        assert stored_value == otp
+        assert stored_value == {"otp": otp, "invitation_token": None}
 
     def test_get_otp_retrieves_from_redis(self):
         """Should retrieve OTP from Redis by email."""
