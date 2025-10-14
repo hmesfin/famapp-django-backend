@@ -8,13 +8,15 @@ from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ViewSet
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ViewSet
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.models import FamilyMember
 from apps.shared.serializers import FamilySerializer
-from apps.users.models import Invitation, User
+from apps.users.models import Invitation
+from apps.users.models import User
 
-from .serializers import InvitationSerializer, UserSerializer
+from .serializers import UserSerializer
 
 
 class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
@@ -92,7 +94,7 @@ class InvitationViewSet(ViewSet):
             return Response(
                 {
                     "detail": f"Cannot cancel invitation with status '{invitation.status}'. "
-                    "Only pending invitations can be cancelled."
+                    "Only pending invitations can be cancelled.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -124,7 +126,7 @@ class InvitationViewSet(ViewSet):
             return Response(
                 {
                     "detail": f"Cannot accept invitation with status '{invitation.status}'. "
-                    "Only pending invitations can be accepted."
+                    "Only pending invitations can be accepted.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -141,14 +143,15 @@ class InvitationViewSet(ViewSet):
             return Response(
                 {
                     "detail": "This invitation was sent to a different email address. "
-                    "Please use the account associated with the invitation."
+                    "Please use the account associated with the invitation.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Validate: user not already a member
         if FamilyMember.objects.filter(
-            family=invitation.family, user=request.user
+            family=invitation.family,
+            user=request.user,
         ).exists():
             return Response(
                 {"detail": "You are already a member of this family."},
@@ -192,7 +195,7 @@ class InvitationViewSet(ViewSet):
             return Response(
                 {
                     "detail": f"Cannot decline invitation with status '{invitation.status}'. "
-                    "Only pending invitations can be declined."
+                    "Only pending invitations can be declined.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -209,7 +212,7 @@ class InvitationViewSet(ViewSet):
             return Response(
                 {
                     "detail": "This invitation was sent to a different email address. "
-                    "Please use the account associated with the invitation."
+                    "Please use the account associated with the invitation.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )

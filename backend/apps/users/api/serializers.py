@@ -2,7 +2,8 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from apps.shared.models import FamilyMember
-from apps.users.models import Invitation, User
+from apps.users.models import Invitation
+from apps.users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer[User]):
@@ -28,7 +29,8 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
         style={"input_type": "password"},
     )
     password_confirm = serializers.CharField(
-        write_only=True, style={"input_type": "password"},
+        write_only=True,
+        style={"input_type": "password"},
     )
     invitation_token = serializers.UUIDField(
         required=False,
@@ -39,7 +41,14 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
 
     class Meta:
         model = User
-        fields = ["email", "first_name", "last_name", "password", "password_confirm", "invitation_token"]
+        fields = [
+            "email",
+            "first_name",
+            "last_name",
+            "password",
+            "password_confirm",
+            "invitation_token",
+        ]
 
     def validate_invitation_token(self, value):
         """
@@ -54,12 +63,10 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
         if value is None:
             return None
 
-        from django.utils import timezone
-
         try:
-            invitation = Invitation.objects.select_related('family').get(
+            invitation = Invitation.objects.select_related("family").get(
                 token=value,
-                status=Invitation.Status.PENDING
+                status=Invitation.Status.PENDING,
             )
         except Invitation.DoesNotExist:
             raise serializers.ValidationError("Invalid or expired invitation token")
@@ -69,15 +76,15 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
             raise serializers.ValidationError("This invitation has expired")
 
         # Check email matches (case-insensitive) - need to get email from initial_data
-        request_email = self.initial_data.get('email', '').lower()
+        request_email = self.initial_data.get("email", "").lower()
         if invitation.invitee_email.lower() != request_email:
             raise serializers.ValidationError(
                 f"This invitation is for {invitation.invitee_email}. "
-                f"Please use that email address to sign up."
+                f"Please use that email address to sign up.",
             )
 
         # Store invitation in context for later use
-        self.context['invitation'] = invitation
+        self.context["invitation"] = invitation
         return value
 
     def validate(self, attrs):
@@ -145,7 +152,7 @@ class InvitationCreateSerializer(serializers.Serializer):
 
         if existing_member:
             raise serializers.ValidationError(
-                f"A user with email {value} is already a member of this family."
+                f"A user with email {value} is already a member of this family.",
             )
 
         return value
@@ -170,8 +177,8 @@ class InvitationCreateSerializer(serializers.Serializer):
         if pending_invitation:
             raise serializers.ValidationError(
                 {
-                    "invitee_email": f"A pending invitation already exists for {invitee_email}."
-                }
+                    "invitee_email": f"A pending invitation already exists for {invitee_email}.",
+                },
             )
 
         return attrs

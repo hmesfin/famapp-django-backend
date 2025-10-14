@@ -73,7 +73,8 @@ def send_otp_email(user):
     Returns:
         dict: {"success": bool, "otp": str (for testing only)}
     """
-    from apps.users.otp import generate_otp, store_otp
+    from apps.users.otp import generate_otp
+    from apps.users.otp import store_otp
 
     try:
         # Generate and store OTP
@@ -109,4 +110,4 @@ def send_otp_email(user):
     except Exception as e:
         logger.error(f"Failed to send OTP email to {user.email}: {e}")
         # Return OTP even on failure for testing purposes
-        return {"success": False, "otp": otp if 'otp' in locals() else None}
+        return {"success": False, "otp": otp if "otp" in locals() else None}
