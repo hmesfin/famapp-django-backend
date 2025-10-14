@@ -3,11 +3,14 @@ Manual test script for cleanup_expired_invitations task.
 Run this in Django shell: docker compose run --rm django python manage.py shell < test_cleanup_task.py
 """
 
-from django.utils import timezone
 from datetime import timedelta
-from apps.users.models import User, Invitation
-from apps.shared.models import Family, FamilyMember
+
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.users.models import Invitation
+from apps.users.models import User
 from apps.users.tasks import cleanup_expired_invitations
+from django.utils import timezone
 
 print("\n" + "="*60)
 print("MANUAL TEST: cleanup_expired_invitations task")

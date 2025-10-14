@@ -26,9 +26,9 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
 from apps.users.models import User
-
 
 # ============================================================================
 # Phase A: Invitation Model Tests
@@ -338,8 +338,9 @@ class TestInvitationModelValidation:
 
     def test_invitation_prevents_duplicate_pending_invites_same_email(self):
         """Cannot have multiple pending invitations for same email to same family."""
-        from apps.users.models import Invitation
         from django.db import IntegrityError
+
+        from apps.users.models import Invitation
 
         # Create first pending invitation
         Invitation.objects.create(

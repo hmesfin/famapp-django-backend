@@ -5,13 +5,16 @@ TDD-first approach: These tests define the behavior before implementation.
 
 import logging
 from datetime import timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 from django.utils import timezone
 
-from apps.shared.models import Family, FamilyMember
-from apps.users.models import Invitation, User
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.users.models import Invitation
+from apps.users.models import User
 
 
 @pytest.mark.django_db
@@ -124,7 +127,6 @@ class TestCleanupExpiredInvitations:
     def test_cleanup_ignores_declined_invitations(self, inviter, family):
         """Task should not modify DECLINED invitations"""
         from apps.users.tasks import cleanup_expired_invitations
-        from apps.users.tasks import cleanup_expired_invitations
         """Task should not modify DECLINED invitations"""
         # Create expired but DECLINED invitation
         declined_invitation = Invitation.objects.create(
@@ -148,7 +150,6 @@ class TestCleanupExpiredInvitations:
 
     def test_cleanup_ignores_cancelled_invitations(self, inviter, family):
         """Task should not modify CANCELLED invitations"""
-        from apps.users.tasks import cleanup_expired_invitations
         from apps.users.tasks import cleanup_expired_invitations
         """Task should not modify CANCELLED invitations"""
         # Create expired but CANCELLED invitation
@@ -174,7 +175,6 @@ class TestCleanupExpiredInvitations:
     def test_cleanup_ignores_already_expired_status(self, inviter, family):
         """Task should not modify invitations already marked as EXPIRED"""
         from apps.users.tasks import cleanup_expired_invitations
-        from apps.users.tasks import cleanup_expired_invitations
         """Task should not modify invitations already marked as EXPIRED"""
         # Create invitation already marked as EXPIRED
         already_expired = Invitation.objects.create(
@@ -198,7 +198,6 @@ class TestCleanupExpiredInvitations:
 
     def test_cleanup_returns_count_of_expired(self, inviter, family):
         """Task should return count of invitations marked as expired"""
-        from apps.users.tasks import cleanup_expired_invitations
         from apps.users.tasks import cleanup_expired_invitations
         """Task should return count of invitations marked as expired"""
         # Create 3 expired PENDING invitations
@@ -233,7 +232,6 @@ class TestCleanupExpiredInvitations:
     def test_cleanup_logs_success(self, inviter, family, caplog):
         """Task should log successful cleanup"""
         from apps.users.tasks import cleanup_expired_invitations
-        from apps.users.tasks import cleanup_expired_invitations
         """Task should log successful cleanup"""
         # Create expired invitation
         Invitation.objects.create(
@@ -256,7 +254,6 @@ class TestCleanupExpiredInvitations:
     def test_cleanup_with_no_expired_invitations(self, caplog):
         """Task should handle case with no expired invitations"""
         from apps.users.tasks import cleanup_expired_invitations
-        from apps.users.tasks import cleanup_expired_invitations
         """Task should handle case with no expired invitations"""
         with caplog.at_level(logging.INFO):
             # Run task (no invitations created)
@@ -269,7 +266,6 @@ class TestCleanupExpiredInvitations:
 
     def test_cleanup_handles_bulk_expiration(self, inviter, family):
         """Task should efficiently handle multiple expired invitations"""
-        from apps.users.tasks import cleanup_expired_invitations
         from apps.users.tasks import cleanup_expired_invitations
         """Task should efficiently handle multiple expired invitations"""
         # Create 50 expired PENDING invitations
@@ -298,7 +294,6 @@ class TestCleanupExpiredInvitations:
 
     def test_cleanup_with_mixed_statuses(self, inviter, family):
         """Task should only update PENDING invitations in mixed scenario"""
-        from apps.users.tasks import cleanup_expired_invitations
         from apps.users.tasks import cleanup_expired_invitations
         """Task should only update PENDING invitations in mixed scenario"""
         # Create various invitations
@@ -379,7 +374,6 @@ class TestCleanupExpiredInvitations:
 
     def test_cleanup_task_is_idempotent(self, inviter, family):
         """Running task multiple times should be safe"""
-        from apps.users.tasks import cleanup_expired_invitations
         from apps.users.tasks import cleanup_expired_invitations
         """Running task multiple times should be safe"""
         # Create expired invitation

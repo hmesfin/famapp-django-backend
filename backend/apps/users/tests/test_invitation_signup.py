@@ -21,7 +21,8 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from rest_framework.test import APIClient
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
 from apps.users.models import Invitation
 
 User = get_user_model()
@@ -132,8 +133,9 @@ class TestSignupWithInvitation:
 
     def test_register_with_expired_invitation_returns_400(self):
         """Registration with expired invitation returns 400."""
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
 
         # Arrange: Create expired invitation
         invitation = Invitation.objects.create(
@@ -445,9 +447,11 @@ class TestSignupWithInvitation:
 
     def test_expired_invitation_during_otp_verify_fails_gracefully(self):
         """If invitation expires between register and verify, handle gracefully."""
-        from apps.users.otp import get_otp
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.users.otp import get_otp
 
         # Arrange: Create invitation
         invitation = Invitation.objects.create(

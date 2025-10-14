@@ -4,15 +4,13 @@ Django admin configuration for shared app models.
 
 from django.contrib import admin
 
-from apps.shared.models import (
-    Family,
-    FamilyMember,
-    GroceryItem,
-    Pet,
-    PetActivity,
-    ScheduleEvent,
-    Todo,
-)
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.shared.models import GroceryItem
+from apps.shared.models import Pet
+from apps.shared.models import PetActivity
+from apps.shared.models import ScheduleEvent
+from apps.shared.models import Todo
 
 
 @admin.register(Family)

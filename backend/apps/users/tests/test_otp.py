@@ -82,7 +82,8 @@ class TestOTPStorage:
 
     def test_get_otp_retrieves_from_redis(self):
         """Should retrieve OTP from Redis by email."""
-        from apps.users.otp import store_otp, get_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         email = "test@example.com"
         otp = "654321"
@@ -102,7 +103,9 @@ class TestOTPStorage:
 
     def test_delete_otp_removes_from_redis(self):
         """OTP should be deleted from Redis after use (one-time use)."""
-        from apps.users.otp import store_otp, get_otp, delete_otp
+        from apps.users.otp import delete_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         email = "test@example.com"
         otp = "789012"
@@ -140,8 +143,10 @@ class TestOTPExpiration:
 
     def test_otp_expires_after_timeout(self):
         """OTP should expire after the specified timeout."""
-        from apps.users.otp import store_otp, get_otp
         import time
+
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         email = "test@example.com"
         otp = "123456"
@@ -160,7 +165,8 @@ class TestOTPExpiration:
 
     def test_otp_default_timeout_is_600_seconds(self):
         """OTP should default to 600 seconds (10 minutes) TTL."""
-        from apps.users.otp import store_otp, get_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         email = "test@example.com"
         otp = "123456"
@@ -186,7 +192,8 @@ class TestOTPEdgeCases:
 
     def test_store_otp_overwrites_existing_otp(self):
         """Storing a new OTP for the same email should overwrite the old one."""
-        from apps.users.otp import store_otp, get_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         email = "test@example.com"
         old_otp = "111111"
@@ -201,7 +208,8 @@ class TestOTPEdgeCases:
 
     def test_different_emails_have_separate_otps(self):
         """OTPs for different emails should be isolated."""
-        from apps.users.otp import store_otp, get_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         email1 = "user1@example.com"
         email2 = "user2@example.com"
@@ -216,7 +224,8 @@ class TestOTPEdgeCases:
 
     def test_email_case_sensitivity(self):
         """OTP storage should be case-sensitive for emails."""
-        from apps.users.otp import store_otp, get_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         email_lower = "test@example.com"
         email_upper = "TEST@EXAMPLE.COM"
@@ -230,7 +239,8 @@ class TestOTPEdgeCases:
 
     def test_otp_with_special_characters_in_email(self):
         """Should handle emails with special characters."""
-        from apps.users.otp import store_otp, get_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         email = "test+tag@example.com"
         otp = "123456"
@@ -241,7 +251,8 @@ class TestOTPEdgeCases:
 
     def test_multiple_delete_calls_idempotent(self):
         """Multiple delete calls should be safe (idempotent)."""
-        from apps.users.otp import store_otp, delete_otp
+        from apps.users.otp import delete_otp
+        from apps.users.otp import store_otp
 
         email = "test@example.com"
         otp = "123456"
@@ -303,6 +314,7 @@ class TestOTPEmailSending:
     def test_send_otp_email_sends_email_to_user(self):
         """send_otp_email should send email to user's email address."""
         from django.core import mail
+
         from apps.users.api.auth_utils import send_otp_email
 
         send_otp_email(self.user)
@@ -317,6 +329,7 @@ class TestOTPEmailSending:
     def test_send_otp_email_has_correct_subject(self):
         """Email subject should be 'FamApp - Your Verification Code'."""
         from django.core import mail
+
         from apps.users.api.auth_utils import send_otp_email
 
         send_otp_email(self.user)
@@ -327,6 +340,7 @@ class TestOTPEmailSending:
     def test_send_otp_email_includes_otp_in_body(self):
         """Email body should include the OTP code prominently."""
         from django.core import mail
+
         from apps.users.api.auth_utils import send_otp_email
 
         result = send_otp_email(self.user)
@@ -343,6 +357,7 @@ class TestOTPEmailSending:
     def test_send_otp_email_includes_expiration_time(self):
         """Email should mention 10-minute expiration time."""
         from django.core import mail
+
         from apps.users.api.auth_utils import send_otp_email
 
         send_otp_email(self.user)
@@ -355,6 +370,7 @@ class TestOTPEmailSending:
     def test_send_otp_email_includes_security_notice(self):
         """Email should include security notice about not requesting code."""
         from django.core import mail
+
         from apps.users.api.auth_utils import send_otp_email
 
         send_otp_email(self.user)
@@ -368,6 +384,7 @@ class TestOTPEmailSending:
     def test_send_otp_email_logs_success(self, caplog):
         """send_otp_email should log successful email sending."""
         import logging
+
         from apps.users.api.auth_utils import send_otp_email
 
         with caplog.at_level(logging.INFO):
@@ -380,8 +397,10 @@ class TestOTPEmailSending:
     def test_send_otp_email_logs_failure_on_exception(self, caplog, monkeypatch):
         """send_otp_email should log errors when email sending fails."""
         import logging
-        from apps.users.api.auth_utils import send_otp_email
+
         from django.core.mail import send_mail
+
+        from apps.users.api.auth_utils import send_otp_email
 
         # Mock send_mail to raise exception
         def mock_send_mail(*args, **kwargs):
@@ -401,8 +420,9 @@ class TestOTPEmailSending:
 
     def test_send_otp_email_uses_default_from_email(self):
         """Email should be sent from settings.DEFAULT_FROM_EMAIL."""
-        from django.core import mail
         from django.conf import settings
+        from django.core import mail
+
         from apps.users.api.auth_utils import send_otp_email
 
         send_otp_email(self.user)
@@ -413,6 +433,7 @@ class TestOTPEmailSending:
     def test_send_otp_email_includes_user_name_in_body(self):
         """Email should address user by name when available."""
         from django.core import mail
+
         from apps.users.api.auth_utils import send_otp_email
 
         # Add full name to user
@@ -568,8 +589,9 @@ class TestOTPVerification:
 
     def test_verify_otp_returns_400_when_otp_expired(self):
         """Expired OTP should return 400 error."""
-        from apps.users.otp import store_otp
         import time
+
+        from apps.users.otp import store_otp
 
         # Arrange: Store OTP with 1 second timeout
         otp = "123456"
@@ -592,7 +614,8 @@ class TestOTPVerification:
 
     def test_verify_otp_deletes_otp_after_successful_verification(self):
         """OTP should be deleted from Redis after successful use (one-time use)."""
-        from apps.users.otp import store_otp, get_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         # Arrange: Store OTP in Redis
         otp = "123456"
@@ -684,6 +707,7 @@ class TestOTPVerification:
     def test_verify_otp_logs_success(self, caplog):
         """OTP verification should log success."""
         import logging
+
         from apps.users.otp import store_otp
 
         # Arrange: Store OTP in Redis
@@ -705,8 +729,9 @@ class TestOTPVerification:
 
     def test_verify_otp_jwt_tokens_are_valid_and_usable(self):
         """JWT tokens returned should be valid and usable for authentication."""
-        from apps.users.otp import store_otp
         from rest_framework_simplejwt.tokens import AccessToken
+
+        from apps.users.otp import store_otp
 
         # Arrange: Store OTP in Redis
         otp = "123456"
@@ -738,8 +763,9 @@ class TestOTPVerification:
 
     def test_verify_otp_creates_family_for_user(self):
         """OTP verification should auto-create family for new user (Enhancement 2)."""
+        from apps.shared.models import Family
+        from apps.shared.models import FamilyMember
         from apps.users.otp import store_otp
-        from apps.shared.models import Family, FamilyMember
 
         # Arrange: Store OTP in Redis
         otp = "123456"
@@ -914,7 +940,8 @@ class TestOTPResend:
 
     def test_resend_otp_overwrites_old_otp(self):
         """New OTP should replace old OTP in Redis."""
-        from apps.users.otp import store_otp, get_otp
+        from apps.users.otp import get_otp
+        from apps.users.otp import store_otp
 
         # Arrange: Store old OTP manually
         old_otp = "111111"
@@ -1245,6 +1272,7 @@ class TestRegistrationOTPIntegration:
     def test_registration_email_contains_otp_code(self):
         """Registration email should contain 6-digit OTP code."""
         from django.core import mail
+
         from apps.users.otp import get_otp
 
         mail.outbox = []

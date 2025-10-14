@@ -6,7 +6,8 @@ import logging
 
 from django.db import transaction
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
 
 logger = logging.getLogger(__name__)
 

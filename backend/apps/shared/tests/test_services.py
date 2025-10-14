@@ -4,7 +4,8 @@ Tests for shared app services.
 
 from django.test import TestCase
 
-from apps.shared.models import Family, FamilyMember
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
 from apps.shared.services import create_family_for_user
 from apps.users.models import User
 

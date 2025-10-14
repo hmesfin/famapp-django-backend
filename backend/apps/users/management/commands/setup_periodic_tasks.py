@@ -5,9 +5,11 @@ This command configures Celery Beat periodic tasks in the database
 using django_celery_beat models.
 """
 
-from django.core.management.base import BaseCommand
-from django_celery_beat.models import PeriodicTask, CrontabSchedule
 import json
+
+from django.core.management.base import BaseCommand
+from django_celery_beat.models import CrontabSchedule
+from django_celery_beat.models import PeriodicTask
 
 
 class Command(BaseCommand):

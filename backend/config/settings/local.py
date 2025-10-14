@@ -13,7 +13,9 @@ SECRET_KEY = env(
     default="UnYYvsd0BdyyijPBRgVnWy7cZzaX5yfpXY0ReQOGnKvzgjEK0joqBUEzl3DwTFkl",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
+# WSL2 IP: 172.21.117.230 (for React Native Expo Go access)
+# Add your ngrok domain here (e.g., abc123.ngrok.io)
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "172.21.117.230", "e0c3393359c3.ngrok-free.app"]  # noqa: S104
 
 # CACHES
 # ------------------------------------------------------------------------------

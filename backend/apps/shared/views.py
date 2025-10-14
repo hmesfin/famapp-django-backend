@@ -384,7 +384,8 @@ class FamilyViewSet(viewsets.ModelViewSet):
 
         Handles both creating and listing invitations on the same endpoint.
         """
-        from apps.users.api.serializers import InvitationCreateSerializer, InvitationSerializer
+        from apps.users.api.serializers import InvitationCreateSerializer
+        from apps.users.api.serializers import InvitationSerializer
         from apps.users.models import Invitation
         from apps.users.tasks import send_invitation_email
 

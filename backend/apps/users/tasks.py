@@ -6,7 +6,8 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from .models import Invitation, User
+from .models import Invitation
+from .models import User
 
 logger = logging.getLogger(__name__)
 

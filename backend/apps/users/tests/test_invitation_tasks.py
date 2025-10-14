@@ -4,8 +4,10 @@ TDD-first approach: These tests define the behavior before implementation.
 """
 
 import logging
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
+from datetime import datetime
+from datetime import timedelta
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 from celery.exceptions import Retry
@@ -14,8 +16,10 @@ from django.core import mail
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from apps.shared.models import Family, FamilyMember
-from apps.users.models import Invitation, User
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.users.models import Invitation
+from apps.users.models import User
 from apps.users.tasks import send_invitation_email
 
 

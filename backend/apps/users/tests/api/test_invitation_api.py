@@ -16,9 +16,10 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.shared.models import Family, FamilyMember
-from apps.users.models import Invitation, User
-
+from apps.shared.models import Family
+from apps.shared.models import FamilyMember
+from apps.users.models import Invitation
+from apps.users.models import User
 
 # ============================================================================
 # Phase C: Invitation Creation Endpoint Tests
