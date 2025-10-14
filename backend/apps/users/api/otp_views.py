@@ -107,23 +107,12 @@ def verify_otp(request):
         delete_otp(email)
 
         families_data = []
-
-        # IMPORTANT: Auto-create family for new user FIRST (Enhancement 2)
-        # This ensures user always gets their own family with ORGANIZER role
-        from apps.shared.services import create_family_for_user
-
-        family, family_member = create_family_for_user(user)
-
-        # Add auto-created family to response
-        auto_family_data = {
-            "public_id": str(family.public_id),
-            "name": family.name,
-            "role": family_member.role,
-        }
-        families_data.append(auto_family_data)
-
-        # Phase G: Check for invitation and auto-join invited family (AFTER auto-create)
         invited_family_data = None
+        auto_family_data = None
+
+        # IMPORTANT: Check for invitation FIRST
+        # If user has invitation, ONLY join invited family (don't auto-create)
+        # If no invitation, create their own family
         if invitation_token_str:
             try:
                 import uuid
@@ -152,14 +141,13 @@ def verify_otp(request):
                         invitation.updated_by = user
                         invitation.save()
 
-                    # Add invited family to response (at the beginning for priority)
+                    # Add invited family to response
                     invited_family_data = {
                         "public_id": str(invitation.family.public_id),
                         "name": invitation.family.name,
                         "role": invited_member.role,
                     }
-                    # Insert at beginning so invited family comes first in list
-                    families_data.insert(0, invited_family_data)
+                    families_data.append(invited_family_data)
 
                     logger.info(
                         f"User {email} accepted invitation and joined family {invitation.family.name}",
@@ -168,12 +156,29 @@ def verify_otp(request):
                     logger.warning(
                         f"Invitation {invitation_token} expired during signup for {email}",
                     )
+                    # Invitation expired - fall back to auto-create
+                    invitation_token_str = None
 
             except (Invitation.DoesNotExist, ValueError) as e:
-                # Invitation not found or invalid - continue with normal flow
+                # Invitation not found or invalid - fall back to auto-create
                 logger.warning(
                     f"Invitation token {invitation_token_str} not found or invalid for {email}: {e}",
                 )
+                invitation_token_str = None
+
+        # No valid invitation - auto-create family for new user
+        if not invitation_token_str:
+            from apps.shared.services import create_family_for_user
+
+            family, family_member = create_family_for_user(user)
+
+            # Add auto-created family to response
+            auto_family_data = {
+                "public_id": str(family.public_id),
+                "name": family.name,
+                "role": family_member.role,
+            }
+            families_data.append(auto_family_data)
 
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
@@ -192,12 +197,13 @@ def verify_otp(request):
             "families": families_data,
         }
 
-        # Backward compatibility: include single "family" field for auto-created family
-        response_data["family"] = auto_family_data
-
-        # Include invited_family separately if exists
+        # Backward compatibility: include single "family" field
+        # Use invited family if exists, otherwise auto-created family
         if invited_family_data:
+            response_data["family"] = invited_family_data
             response_data["invited_family"] = invited_family_data
+        elif auto_family_data:
+            response_data["family"] = auto_family_data
 
         return Response(response_data, status=status.HTTP_200_OK)
 
