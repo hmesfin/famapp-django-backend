@@ -1,4 +1,4 @@
-from apps.users.api.views import UserViewSet
+from apps.users.api.views import InvitationViewSet, UserViewSet
 from django.conf import settings
 from django.urls import include
 from django.urls import path
@@ -8,6 +8,9 @@ from rest_framework.routers import SimpleRouter
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
 
 router.register("users", UserViewSet)
+
+# Invitation ViewSet with custom lookup_field (token instead of pk)
+router.register("v1/invitations", InvitationViewSet, basename="invitation")
 
 app_name = "api"
 urlpatterns = [

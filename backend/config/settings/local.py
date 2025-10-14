@@ -31,6 +31,11 @@ CACHES = {
 EMAIL_HOST = env("EMAIL_HOST", default="mailpit")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
 EMAIL_PORT = 1025
+# https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
+DEFAULT_FROM_EMAIL = env(
+    "DJANGO_DEFAULT_FROM_EMAIL",
+    default="FamApp <noreply@famapp.local>",
+)
 
 # django-debug-toolbar
 # ------------------------------------------------------------------------------

@@ -368,6 +368,75 @@ class FamilyViewSet(viewsets.ModelViewSet):
 
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+    # ========================================================================
+    # Family Invitation Management Actions (Enhancement 3)
+    # ========================================================================
+
+    @action(
+        detail=True,
+        methods=["post", "get"],
+        url_path="invitations",
+    )
+    def invitations(self, request, public_id=None):
+        """
+        POST /api/v1/families/{public_id}/invitations/ - Create invitation (organizers only)
+        GET /api/v1/families/{public_id}/invitations/ - List invitations (organizers only)
+
+        Handles both creating and listing invitations on the same endpoint.
+        """
+        from apps.users.api.serializers import InvitationCreateSerializer, InvitationSerializer
+        from apps.users.models import Invitation
+        from apps.users.tasks import send_invitation_email
+
+        family = self.get_object()
+
+        # Check permission: only ORGANIZER can manage invitations
+        if not FamilyMember.objects.filter(
+            family=family, user=request.user, role=FamilyMember.Role.ORGANIZER
+        ).exists():
+            return Response(
+                {"detail": "You must be a family organizer to perform this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if request.method == "POST":
+            # Create invitation
+            serializer = InvitationCreateSerializer(
+                data=request.data, context={"family": family}
+            )
+            serializer.is_valid(raise_exception=True)
+
+            # Create invitation
+            invitation = Invitation.objects.create(
+                inviter=request.user,
+                invitee_email=serializer.validated_data["invitee_email"],
+                family=family,
+                role=serializer.validated_data["role"],
+                created_by=request.user,
+                updated_by=request.user,
+            )
+
+            # Trigger Celery email task
+            send_invitation_email.delay(invitation.id)
+
+            # Return invitation data
+            output_serializer = InvitationSerializer(invitation)
+            return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == "GET":
+            # List invitations
+            queryset = Invitation.objects.filter(family=family, is_deleted=False).order_by(
+                "-created_at"
+            )
+
+            # Filter by status if provided
+            status_filter = request.query_params.get("status")
+            if status_filter:
+                queryset = queryset.filter(status=status_filter.lower())
+
+            serializer = InvitationSerializer(queryset, many=True)
+            return Response(serializer.data)
+
 
 @extend_schema_view(
     list=extend_schema(tags=["Todos"]),

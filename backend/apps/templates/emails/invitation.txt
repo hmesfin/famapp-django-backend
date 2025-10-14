@@ -1,0 +1,35 @@
+Hi there!
+
+{{ inviter_name }} has invited you to join their family "{{ family_name }}" on FamApp!
+
+You've been invited to join as: {{ role }}
+
+=====================================
+
+As a family member, you'll be able to:
+- Share and manage family tasks
+- Coordinate schedules and events
+- Create shared grocery lists
+- Track pet care responsibilities
+- Stay connected with your family
+
+=====================================
+
+To accept this invitation, visit:
+{{ accept_url }}
+
+To decline this invitation, visit:
+{{ decline_url }}
+
+Or use this invitation code: {{ invitation_token }}
+
+=====================================
+
+IMPORTANT: This invitation expires on {{ expires_at|date:"F d, Y at g:i A" }}
+
+If you have any questions or didn't expect this invitation, please feel free to ignore this email.
+
+---
+This invitation was sent to {{ invitee_email }}
+© 2025 FamApp. All rights reserved.
+https://famapp.com

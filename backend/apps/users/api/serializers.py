@@ -1,7 +1,8 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from apps.users.models import User
+from apps.shared.models import FamilyMember
+from apps.users.models import Invitation, User
 
 
 class UserSerializer(serializers.ModelSerializer[User]):
@@ -55,3 +56,123 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
             last_name=validated_data.get("last_name", ""),
         )
         return user
+
+
+# ============================================================================
+# Invitation Serializers (Enhancement 3)
+# ============================================================================
+
+
+class InvitationCreateSerializer(serializers.Serializer):
+    """
+    Serializer for creating family invitations.
+
+    Only accepts PARENT or CHILD roles (ORGANIZER is excluded for security).
+    Validates that invitee is not already a family member and no pending
+    invitation exists for the same email.
+    """
+
+    invitee_email = serializers.EmailField(
+        required=True,
+        help_text="Email address of the person being invited",
+    )
+    role = serializers.ChoiceField(
+        choices=["parent", "child"],
+        required=True,
+        help_text="Role to be assigned (PARENT or CHILD only)",
+    )
+
+    def validate_invitee_email(self, value):
+        """
+        Validate that invitee is not already a family member.
+        """
+        family = self.context.get("family")
+        if not family:
+            return value
+
+        # Check if user with this email is already a member
+        existing_member = FamilyMember.objects.filter(
+            family=family,
+            user__email=value,
+        ).exists()
+
+        if existing_member:
+            raise serializers.ValidationError(
+                f"A user with email {value} is already a member of this family."
+            )
+
+        return value
+
+    def validate(self, attrs):
+        """
+        Validate that no pending invitation exists for this email.
+        """
+        family = self.context.get("family")
+        if not family:
+            return attrs
+
+        invitee_email = attrs.get("invitee_email")
+
+        # Check for existing pending invitation
+        pending_invitation = Invitation.objects.filter(
+            family=family,
+            invitee_email=invitee_email,
+            status=Invitation.Status.PENDING,
+        ).exists()
+
+        if pending_invitation:
+            raise serializers.ValidationError(
+                {
+                    "invitee_email": f"A pending invitation already exists for {invitee_email}."
+                }
+            )
+
+        return attrs
+
+
+class InviterSerializer(serializers.ModelSerializer):
+    """
+    Simplified serializer for inviter details (no hyperlinked field).
+    Used as nested serializer in InvitationSerializer.
+    """
+
+    class Meta:
+        model = User
+        fields = ["id", "public_id", "email", "first_name", "last_name"]
+        read_only_fields = fields
+
+
+class InvitationSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for invitation details.
+
+    Includes inviter details, family name, and computed is_expired field.
+    """
+
+    inviter = InviterSerializer(read_only=True)
+    family_name = serializers.CharField(source="family.name", read_only=True)
+    is_expired = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Invitation
+        fields = [
+            "id",
+            "public_id",
+            "token",
+            "inviter",
+            "invitee_email",
+            "family_name",
+            "role",
+            "status",
+            "expires_at",
+            "is_expired",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+    def get_is_expired(self, obj):
+        """
+        Compute is_expired status from model property.
+        """
+        return obj.is_expired

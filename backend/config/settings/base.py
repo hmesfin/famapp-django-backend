@@ -396,3 +396,6 @@ SIMPLE_JWT = {
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+# Frontend URL for invitation links (override in production)
+FRONTEND_URL = env.str("FRONTEND_URL", default="http://localhost:5173")
