@@ -226,3 +226,160 @@ class InvitationViewSet(ViewSet):
             {"detail": "Invitation declined successfully."},
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["post"], url_path="switch-family")
+    def switch_family(self, request, token=None):
+        """
+        POST /api/v1/invitations/{token}/switch-family/ - Switch from current family to invited family.
+
+        This handles the "Existing User" flow where a user already belongs to a family
+        but wants to join a different one via invitation.
+
+        Process:
+        1. Validates invitation is valid
+        2. Checks user has an existing family membership
+        3. If user is ORGANIZER with other members, BLOCKS the switch
+        4. Deletes current family membership (and family if user is sole ORGANIZER)
+        5. Joins invited family with new role
+
+        This action is IRREVERSIBLE.
+
+        Expected payload:
+        {
+            "confirm": true  // User must explicitly confirm
+        }
+        """
+        import logging
+
+        from apps.shared.models import Family
+
+        logger = logging.getLogger(__name__)
+
+        # Get invitation by token
+        invitation = get_object_or_404(Invitation, token=token)
+
+        # Validate: status == PENDING
+        if invitation.status != Invitation.Status.PENDING:
+            return Response(
+                {
+                    "detail": f"Cannot accept invitation with status '{invitation.status}'. "
+                    "Only pending invitations can be accepted.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate: not expired
+        if invitation.is_expired:
+            return Response(
+                {"detail": "This invitation has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate: email matches (case-insensitive)
+        if request.user.email.lower() != invitation.invitee_email.lower():
+            return Response(
+                {
+                    "detail": "This invitation was sent to a different email address. "
+                    "Please use the account associated with the invitation.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check user has existing family membership
+        existing_membership = (
+            FamilyMember.objects.select_related("family")
+            .filter(user=request.user)
+            .first()
+        )
+
+        if not existing_membership:
+            return Response(
+                {
+                    "detail": "You don't belong to any family. Use the regular accept endpoint instead.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if user explicitly confirmed
+        confirm = request.data.get("confirm", False)
+        if not confirm:
+            return Response(
+                {
+                    "detail": "You must confirm this action by setting 'confirm' to true.",
+                    "warning": "Switching families is IRREVERSIBLE. You will leave your current family.",
+                    "current_family": {
+                        "public_id": str(existing_membership.family.public_id),
+                        "name": existing_membership.family.name,
+                        "role": existing_membership.role,
+                    },
+                    "new_family": {
+                        "public_id": str(invitation.family.public_id),
+                        "name": invitation.family.name,
+                        "role": invitation.role,
+                    },
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # CRITICAL: If user is ORGANIZER, check if there are other members
+        if existing_membership.role == FamilyMember.Role.ORGANIZER:
+            other_members_count = (
+                FamilyMember.objects.filter(family=existing_membership.family)
+                .exclude(user=request.user)
+                .count()
+            )
+
+            if other_members_count > 0:
+                return Response(
+                    {
+                        "detail": "You cannot leave this family as the organizer while other members exist. "
+                        "Please remove all other members first, or transfer ownership.",
+                        "other_members_count": other_members_count,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # All validations passed - perform the switch atomically
+        with transaction.atomic():
+            current_family = existing_membership.family
+            was_sole_organizer = (
+                existing_membership.role == FamilyMember.Role.ORGANIZER
+                and FamilyMember.objects.filter(family=current_family).count() == 1
+            )
+
+            # Delete current membership
+            existing_membership.delete()
+
+            # If user was the sole member (ORGANIZER), delete the family too
+            if was_sole_organizer:
+                current_family.delete()
+                logger.info(
+                    f"Deleted family {current_family.name} as user {request.user.email} was sole member"
+                )
+
+            # Create new membership in invited family
+            new_membership = FamilyMember.objects.create(
+                family=invitation.family,
+                user=request.user,
+                role=invitation.role,
+            )
+
+            # Mark invitation as accepted
+            invitation.status = Invitation.Status.ACCEPTED
+            invitation.updated_by = request.user
+            invitation.save()
+
+            logger.info(
+                f"User {request.user.email} switched from family to {invitation.family.name}"
+            )
+
+        # Return new family data
+        family_serializer = FamilySerializer(invitation.family)
+        return Response(
+            {
+                "detail": "Successfully switched families.",
+                "family": family_serializer.data,
+                "role": new_membership.role,
+            },
+            status=status.HTTP_200_OK,
+        )

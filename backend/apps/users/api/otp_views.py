@@ -127,6 +127,27 @@ def verify_otp(request):
 
                 # Check if invitation is still valid (not expired)
                 if not invitation.is_expired:
+                    # IMPORTANT: Check if user already belongs to a family
+                    # One user = One family rule
+                    existing_membership = FamilyMember.objects.filter(user=user).first()
+
+                    if existing_membership:
+                        # User already has a family - they must switch explicitly
+                        return Response(
+                            {
+                                "error": "You already belong to a family. To join another family, please use the family switch feature.",
+                                "current_family": {
+                                    "public_id": str(
+                                        existing_membership.family.public_id
+                                    ),
+                                    "name": existing_membership.family.name,
+                                    "role": existing_membership.role,
+                                },
+                                "requires_family_switch": True,
+                            },
+                            status=status.HTTP_409_CONFLICT,
+                        )
+
                     # Accept invitation atomically
                     with transaction.atomic():
                         # Create FamilyMember
