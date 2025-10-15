@@ -42,10 +42,12 @@ def send_invitation_email(self, invitation_id):
             'invitee_email': invitation.invitee_email,
         }
 
-        # Build accept/decline URLs (frontend URLs - configurable via settings)
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
-        context['accept_url'] = f"{frontend_url}/invitations/{invitation.token}/accept"
-        context['decline_url'] = f"{frontend_url}/invitations/{invitation.token}/decline"
+        # Build accept/decline URLs (mobile deep link format)
+        # Accept URL: Opens mobile app directly with invitation token pre-filled
+        context['accept_url'] = f"famapp://signup/{invitation.token}"
+        # Decline URL: Uses backend API endpoint (no frontend needed)
+        backend_url = getattr(settings, 'BACKEND_URL', 'http://localhost:8000')
+        context['decline_url'] = f"{backend_url}/api/v1/invitations/{invitation.token}/decline/"
 
         # Send email using Django's send_mail
         subject = f"You're invited to join {invitation.family.name} on FamApp!"

@@ -4,6 +4,18 @@ volumes:
   backend_local_redis_data: {}
 
 services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./compose/local/nginx/Dockerfile
+    image: backend_local_nginx
+    depends_on:
+      - django
+      - mailpit
+    ports:
+      - '8000:80'
+    restart: unless-stopped
+
   django: &django
     build:
       context: .
@@ -19,8 +31,8 @@ services:
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
-    ports:
-      - '8000:8000'
+    expose:
+      - '8000'
     command: /start
 
   postgres:
@@ -36,8 +48,8 @@ services:
 
   mailpit:
     image: docker.io/axllent/mailpit:latest
-    ports:
-      - "8025:8025"
+    expose:
+      - "8025"
 
   redis:
     image: docker.io/redis:6

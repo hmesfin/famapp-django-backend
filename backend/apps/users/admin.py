@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from django.utils.translation import gettext_lazy as _
 
+from .models import Invitation
 from .models import User
 
 
@@ -45,5 +46,22 @@ class UserAdmin(auth_admin.UserAdmin):
                     "password2",
                 ),
             },
+        ),
+    )
+
+
+@admin.register(Invitation)
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ["invitee_email", "inviter", "created_at", "status"]
+    search_fields = ["invitee_email", "inviter__email"]
+    ordering = ["-created_at"]
+    readonly_fields = ["created_at", "updated_at"]  # Timestamp fields readonly
+    list_filter = ["status", "created_at"]
+    autocomplete_fields = ["inviter"]
+    fieldsets = (
+        (None, {"fields": ("invitee_email", "inviter", "status")}),
+        (
+            _("Timestamps"),
+            {"fields": ("created_at", "updated_at")},
         ),
     )

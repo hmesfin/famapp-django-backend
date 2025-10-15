@@ -15,7 +15,7 @@ SECRET_KEY = env(
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 # WSL2 IP: 172.21.117.230 (for React Native Expo Go access)
 # Add your ngrok domain here (e.g., abc123.ngrok.io)
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "172.21.117.230", "e0c3393359c3.ngrok-free.app"]  # noqa: S104
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "172.21.117.230", "intersticed-latently-bertie.ngrok-free.dev"]  # noqa: S104
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -95,3 +95,10 @@ CORS_ALLOWED_ORIGINS = [
 
 # Alternative: Allow all origins during development (less secure but convenient)
 # CORS_ALLOW_ALL_ORIGINS = True
+
+# CSRF Settings
+# ------------------------------------------------------------------------------
+# Trust ngrok domain for CSRF protection (needed when accessing via ngrok tunnel)
+CSRF_TRUSTED_ORIGINS = [
+    "https://intersticed-latently-bertie.ngrok-free.dev",
+]

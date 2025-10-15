@@ -69,18 +69,23 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
                 status=Invitation.Status.PENDING,
             )
         except Invitation.DoesNotExist:
-            raise serializers.ValidationError("Invalid or expired invitation token")
+            msg = "Invalid or expired invitation token"
+            raise serializers.ValidationError(msg)
 
         # Check not expired
         if invitation.is_expired:
-            raise serializers.ValidationError("This invitation has expired")
+            msg = "This invitation has expired"
+            raise serializers.ValidationError(msg)
 
         # Check email matches (case-insensitive) - need to get email from initial_data
         request_email = self.initial_data.get("email", "").lower()
         if invitation.invitee_email.lower() != request_email:
-            raise serializers.ValidationError(
+            msg = (
                 f"This invitation is for {invitation.invitee_email}. "
-                f"Please use that email address to sign up.",
+                f"Please use that email address to sign up."
+            )
+            raise serializers.ValidationError(
+                msg,
             )
 
         # Store invitation in context for later use
@@ -92,7 +97,8 @@ class UserCreateSerializer(serializers.ModelSerializer[User]):
         Validate that password and password_confirm match.
         """
         if attrs["password"] != attrs["password_confirm"]:
-            raise serializers.ValidationError("Passwords don't match")
+            msg = "Passwords don't match"
+            raise serializers.ValidationError(msg)
         return attrs
 
     def create(self, validated_data):
